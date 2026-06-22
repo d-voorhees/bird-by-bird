@@ -56,15 +56,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "bird_api.wsgi.application"
 
+import dj_database_url
+
+DEFAULT_DATABASE_URL = (
+    f"postgresql://{os.environ.get('POSTGRES_USER', 'bird')}:"
+    f"{os.environ.get('POSTGRES_PASSWORD', 'bird')}@"
+    f"{os.environ.get('POSTGRES_HOST', 'localhost')}:"
+    f"{os.environ.get('POSTGRES_PORT', '5432')}/"
+    f"{os.environ.get('POSTGRES_DB', 'bird')}"
+)
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "bird"),
-        "USER": os.environ.get("POSTGRES_USER", "bird"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "bird"),
-        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
-    }
+    "default": dj_database_url.config(
+        default=os.environ.get("DATABASE_URL", DEFAULT_DATABASE_URL),
+        conn_max_age=600,
+        ssl_require=not DEBUG,
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -107,3 +114,13 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+
+# Production security settings — applied only when DEBUG is off.
+# Fly.io terminates HTTPS at its edge proxy and forwards plain HTTP
+# to the container, setting X-Forwarded-Proto. The header below tells
+# Django to trust that header when deciding whether a request is secure.
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
