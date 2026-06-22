@@ -1,0 +1,42 @@
+# .gitignore at repo root
+
+# Environment files
+.env
+.env.local
+.env.production
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+.next/
+.vercel/
+dist/
+build/
+.pnpm-store/
+
+# Database
+*.sqlite3
+*.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Secrets
+*.pem
+*.key
+fly.toml.backup

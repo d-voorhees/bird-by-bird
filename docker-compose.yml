@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: bird
+      POSTGRES_USER: bird
+      POSTGRES_PASSWORD: bird
+    ports:
+      - "5432:5432"
+    volumes:
+      - bird_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  bird_postgres_data:

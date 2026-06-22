@@ -1,0 +1,244 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  color-scheme: light;
+  --color-paper: 247 243 236;
+  --color-ink: 31 28 24;
+  --color-accent: 29 78 137;
+  --color-accent-fg: 247 243 236;
+  --color-stone: 216 209 196;
+  --color-surface: 255 255 255;
+  min-height: 100%;
+  background-color: rgb(var(--color-paper));
+}
+
+html.dark {
+  --color-paper: 15 26 46;
+  --color-ink: 232 238 247;
+  --color-accent: 126 182 230;
+  --color-accent-fg: 15 26 46;
+  --color-stone: 61 90 115;
+  --color-surface: 30 45 70;
+}
+
+body {
+  min-height: 100%;
+  background-color: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.geist-mono {
+  font-family: "Geist Mono", monospace;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+/* Flock lists: no bullets, ever */
+.flock-list,
+.flock-list-item {
+  list-style: none !important;
+  list-style-type: none !important;
+  margin: 0;
+  padding: 0;
+}
+
+.flock-list-item::marker {
+  content: none;
+}
+
+/* 20px square checkbox — explicit CSS, not Tailwind (avoids preflight conflicts) */
+.bird-checkbox {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  padding: 0;
+  margin: 0;
+  border: 1.5px solid rgb(var(--color-ink));
+  border-radius: 0 !important;
+  background-color: rgb(var(--color-paper));
+  background-image: none;
+  color: rgb(var(--color-paper));
+  flex-shrink: 0;
+  vertical-align: middle;
+  font: inherit;
+  line-height: 1;
+}
+
+.bird-checkbox:disabled {
+  opacity: 0.5;
+}
+
+.bird-checkbox--checked {
+  background-color: rgb(var(--color-accent)) !important;
+  border-color: rgb(var(--color-accent)) !important;
+  color: rgb(var(--color-accent-fg)) !important;
+}
+
+.bird-checkbox__mark {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+/* Single horizontal row per flock item */
+.flock-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 25px;
+}
+
+.flock-row__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  padding: 15px 0;
+  display: flex;
+  align-items: center;
+}
+
+.flock-row__text--title-only {
+  align-self: stretch;
+  overflow: hidden;
+}
+
+.flock-row__text--title-only .editable-task-content--title-only {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.flock-row__text .task-notes-trigger--overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  min-height: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.flock-row__text .editable-task-content__title {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  pointer-events: none;
+}
+
+.flock-row__text .editable-task-content__title button,
+.flock-row__text .editable-task-content__title input {
+  pointer-events: auto;
+}
+
+.flock-list-footer__action {
+  margin-top: 0.75rem;
+}
+
+.flock-row .task-notes-field {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgb(var(--color-ink) / 0.5);
+}
+
+.task-notes-group {
+  width: 100%;
+}
+
+.task-notes-trigger--empty {
+  min-height: 1.4em;
+}
+
+.task-edit-field {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid rgb(var(--color-stone) / 0.4);
+  border-radius: 0;
+  background: transparent;
+  outline: none;
+  line-height: 1.1;
+  font: inherit;
+  color: inherit;
+  resize: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+textarea.task-edit-field {
+  field-sizing: content;
+  min-height: 1.1em;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.task-edit-field:focus {
+  border-bottom-color: rgb(var(--color-accent));
+}
+
+.flock-row__actions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.flock-drag-handle {
+  touch-action: none;
+}
+
+.flock-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid rgb(var(--color-stone) / 0.3);
+  border-radius: 4px;
+  background: rgb(var(--color-paper));
+  font-size: 12px;
+  line-height: 1;
+  color: rgb(var(--color-ink));
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.flock-action-btn:hover:not(:disabled) {
+  border-color: rgb(var(--color-ink));
+}
+
+.flock-action-btn:disabled {
+  opacity: 0.45;
+}
+
+.bird-img {
+  flex-shrink: 0;
+  object-fit: contain;
+}

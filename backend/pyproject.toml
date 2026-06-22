@@ -1,0 +1,43 @@
+[project]
+name = "bird-backend"
+version = "0.1.0"
+description = "Bird Django GraphQL API"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "django>=5.2",
+    "graphene-django>=3.2",
+    "psycopg[binary]>=3.3",
+    "pyjwt>=2.13",
+    "django-cors-headers>=4.9",
+    "python-dotenv>=1.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0",
+    "pytest-django>=4.12",
+    "mypy>=2.0",
+    "django-stubs>=6.0",
+    "ruff>=0.15",
+    "black>=26.0",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+plugins = ["mypy_django_plugin.main"]
+strict = true
+
+[tool.django-stubs]
+django_settings_module = "bird_api.settings"
