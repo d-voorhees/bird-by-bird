@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 import graphene
 from django.db.models import Q
 from django.utils import timezone
@@ -12,6 +14,8 @@ from core.email_verification import create_and_send_verification_email, verify_e
 from core.password_reset import create_and_send_password_reset_email, reset_password_with_token
 from core.models import Session, Task, TaskStatus, User
 from core.rate_limit import is_rate_limited
+
+logger = logging.getLogger(__name__)
 
 
 class TaskStatusEnum(graphene.Enum):
@@ -123,6 +127,7 @@ class SignUp(graphene.Mutation):
         try:
             create_and_send_verification_email(user)
         except Exception as exc:
+            logger.exception("Could not send verification email during sign-up for %s", normalized_email)
             user.delete()
             raise GraphQLError("Could not send verification email. Please try again.") from exc
 

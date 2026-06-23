@@ -36,8 +36,8 @@ export default function HomePage() {
         </h1>
         <p className="mt-6 max-w-xl text-sm leading-relaxed text-ink/75 sm:text-base">
           Bird by Bird is a focus tool for people who already have too many places to keep their
-          tasks. Pull your most important tasks (your flock) for today out of your bigger lists and put them in the app. It shows you
-          one task at a time, allowing you to concentrate on just one at a time, until the flock is clear.
+          tasks. Pull your most important tasks (your flock) for today out of your big list and put them in the app. It shows you
+          one task at a time, allowing you to concentrate on just one task at a time, until the flock is clear.
         </p>
         <LandingCTA className="mt-10" />
       </section>
