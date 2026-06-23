@@ -36,8 +36,8 @@ export default function HomePage() {
         </h1>
         <p className="mt-6 max-w-xl text-sm leading-relaxed text-ink/75 sm:text-base">
           Bird by Bird is a focus tool for people who already have too many places to keep their
-          tasks. Pull your most important tasks (your flock)for today out of your bigger lists and put them in the app. It shows you
-          one task at a time until the flock is clear.
+          tasks. Pull your most important tasks (your flock) for today out of your bigger lists and put them in the app. It shows you
+          one task at a time, allowing you to concentrate on just one at a time, until the flock is clear.
         </p>
         <LandingCTA className="mt-10" />
       </section>
@@ -68,8 +68,7 @@ export default function HomePage() {
           <p className="mt-6 text-sm leading-relaxed text-ink/75 sm:text-base">
             Bird by Bird is not a replacement for your task manager. The application does not send
             notifications, track streaks, or let you assign tasks across people, projects, or
-            priorities. The flock holds what you have chosen to focus on. From there, the bird view
-            brings up one thing at a time.
+            priorities. Instead it is a focus tool. Instead of being overwhelmed by a giant list of tasks, this displays one task to focus on at a time.
           </p>
         </div>
       </section>
@@ -85,13 +84,13 @@ export default function HomePage() {
           <div className="mt-6 space-y-4 text-sm leading-relaxed text-ink/75 sm:text-base">
             <p>
               Knowledge workers lose hours every day to context switching. The cost is the energy
-              spent reloading where you were and what you were doing, every time you bounce between
-              tabs and tools. Most task managers worsen the problem by showing you every open item
-              the moment you sign in.
+              spent remembering where you were and what you were doing, every time you bounce between
+              tabs and tools and a giant to do list. Most task managers worsen the problem by showing you every open item
+              the moment you sign in, leading to task overwhelm.
             </p>
             <p>
               Bird by Bird is a layer that pulls one item out of the noise and gives it the whole screen
-              until you are done with it. Allowing you to focus on one thing at a time.
+              until you are done with it. Helping you to focus on one thing at a time.
             </p>
           </div>
         </div>
