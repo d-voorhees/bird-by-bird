@@ -27,6 +27,7 @@ def create_and_send_verification_email(user: User) -> None:
     )
 
     verify_url = _frontend_verify_url(token)
+    signed_up_at = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
     send_mail(
         subject="Verify your Bird by Bird account",
         message=(
@@ -38,6 +39,18 @@ def create_and_send_verification_email(user: User) -> None:
         recipient_list=[user.email],
         fail_silently=False,
     )
+
+    try:
+        send_mail(
+            subject=f"New bird-by-bird signup: {user.email}",
+            message=f"New signup: {user.email} at {signed_up_at} UTC",
+            from_email="noreply@mediumandmessage.com",
+            recipient_list=["danielle@mediumandmessage.com"],
+            html_message=f"<p>New signup: <strong>{user.email}</strong> at {signed_up_at} UTC</p>",
+            fail_silently=False,
+        )
+    except Exception:
+        pass
 
 
 def verify_email_token(token: str) -> User:
