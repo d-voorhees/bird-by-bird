@@ -87,8 +87,8 @@ function FirstBirdScreen() {
             style={{ width: "300px", height: "auto" }}
           />
           <p className="text-sm leading-relaxed text-ink/55 sm:text-base">
-            Add your first task below. The application will show it to you one at a time until
-            the flock is clear.
+            Add something you want to work on. Bird by Bird will keep it front and center until
+            you&apos;re done.
           </p>
           <button
             type="button"
