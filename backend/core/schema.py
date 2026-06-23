@@ -7,6 +7,7 @@ from graphql import GraphQLError
 
 from core import task_service
 from core.auth import SESSION_COOKIE_NAME, cookie_settings, create_session, get_user_from_request
+from core.bird_assignment import pick_bird_image
 from core.email_verification import create_and_send_verification_email, verify_email_token
 from core.password_reset import create_and_send_password_reset_email, reset_password_with_token
 from core.models import Session, Task, TaskStatus, User
@@ -58,7 +59,11 @@ class TaskType(graphene.ObjectType):
         return self.completed_at
 
     def resolve_bird_image(self, info: graphene.ResolveInfo):
-        return self.bird_image or None
+        if self.bird_image:
+            return self.bird_image
+        self.bird_image = pick_bird_image(self.user)
+        self.save(update_fields=["bird_image"])
+        return self.bird_image
 
 
 class AuthPayload(graphene.ObjectType):

@@ -24,8 +24,9 @@ export const BIRD_IMAGES = [
 ] as const;
 
 export type BirdImageName = (typeof BIRD_IMAGES)[number];
+export const FALLBACK_BIRD_IMAGE: BirdImageName = BIRD_IMAGES[0];
 
 export function birdImageSrc(filename: string | null | undefined): string | null {
-  if (!filename || !filename.trim()) return null;
+  if (!filename || !filename.trim()) return `/img/${FALLBACK_BIRD_IMAGE}`;
   return `/img/${filename}`;
 }

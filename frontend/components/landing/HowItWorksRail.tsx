@@ -115,9 +115,8 @@ function MockCompletedRow({ title, bird, time }: MockTask & { time: string }) {
 
 function MockFlockView() {
   const items: MockTask[] = [
-    { title: "film upwork videos", bird: "Artboard14.svg" },
-    { title: "prep bird project for AI coding", bird: "Artboard8.svg" },
-    { title: "fix bugs and improvements", bird: "Artboard3.svg" },
+    { title: "Respond to Priya's Slack", bird: "Artboard8.svg" },
+    { title: "Pull analytics for the deck", bird: "Artboard3.svg" },
   ];
 
   return (
@@ -138,8 +137,9 @@ function MockBirdView() {
     >
       <BirdImage filename="Artboard27.svg" widthPx={240} className="mx-auto mb-4" />
       <p className="font-display text-xl leading-tight text-ink sm:text-2xl">
-        film upwork videos
+        resend email routing info
       </p>
+      <p className="mt-2 text-xs text-ink/50">confirm dkim is correct</p>
       <p className="mt-3 text-sm text-ink/55">One task on screen. Everything else out of sight.</p>
       <div className="mt-6 flex justify-center gap-3">
         <span className="min-w-[5rem] rounded-md bg-accent px-4 py-2 text-xs font-medium text-accent-fg">
@@ -155,8 +155,8 @@ function MockBirdView() {
 
 function MockHistoryView() {
   const items: (MockTask & { time: string })[] = [
-    { title: "prep my day (Thursday)", bird: "Artboard12.svg", time: "June 19 10:27am" },
-    { title: "film social content", bird: "Artboard21.svg", time: "June 19 9:14am" },
+    { title: "Write the agenda so meeting has a point", bird: "Artboard12.svg", time: "June 19 10:27am" },
+    { title: "finish chapter 2", bird: "Artboard21.svg", time: "June 19 9:14am" },
   ];
 
   return (
@@ -173,7 +173,7 @@ const STEPS: Step[] = [
   {
     number: "1",
     title: "Build your flock",
-    body: "Pull the things you want to work on now out of your task manager and add them one at a time. The friction is the point.",
+    body: "Pull the most important things you need to work on now out of your bigger list and add them to the flock. ",
     illustration: <MockFlockView />,
   },
   {
@@ -185,7 +185,7 @@ const STEPS: Step[] = [
   {
     number: "3",
     title: "Finish and move on",
-    body: "Mark the bird done, and the next one appears. The history page keeps a record of what flew.",
+    body: "Mark the bird done, and the next one appears. The history page keeps a record of what you finished (birds that have flown).",
     illustration: <MockHistoryView />,
   },
 ];

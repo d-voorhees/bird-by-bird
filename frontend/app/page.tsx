@@ -36,7 +36,7 @@ export default function HomePage() {
         </h1>
         <p className="mt-6 max-w-xl text-sm leading-relaxed text-ink/75 sm:text-base">
           Bird by Bird is a focus tool for people who already have too many places to keep their
-          tasks. Pull a short flock out of whatever backlog you use, and the application shows you
+          tasks. Pull your most important tasks (your flock)for today out of your bigger lists and put them in the app. It shows you
           one task at a time until the flock is clear.
         </p>
         <LandingCTA className="mt-10" />
@@ -69,7 +69,7 @@ export default function HomePage() {
             Bird by Bird is not a replacement for your task manager. The application does not send
             notifications, track streaks, or let you assign tasks across people, projects, or
             priorities. The flock holds what you have chosen to focus on. From there, the bird view
-            brings up one item at a time.
+            brings up one thing at a time.
           </p>
         </div>
       </section>
@@ -90,8 +90,8 @@ export default function HomePage() {
               the moment you sign in.
             </p>
             <p>
-              Bird by Bird is a layer that pulls one item out of the noise and gives it the screen
-              until you are done with it. The constraint is the product.
+              Bird by Bird is a layer that pulls one item out of the noise and gives it the whole screen
+              until you are done with it. Allowing you to focus on one thing at a time.
             </p>
           </div>
         </div>

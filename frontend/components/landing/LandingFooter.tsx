@@ -14,7 +14,7 @@ export function LandingFooter() {
   return (
     <footer className="border-t border-stone/20 px-6 py-10">
       <div className="mx-auto w-full max-w-2xl text-center">
-        <p className="text-sm text-ink/60">A small project from Medium &amp; Message.</p>
+        <p className="text-sm text-ink/60">A small project from <Link href="https://mediumandmessage.com/?utm_source=birdbybird&utm_medium=referral">Medium &amp; Message</Link>.</p>
         <nav
           className="mt-4 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs leading-none"
           aria-label="Footer"
@@ -27,11 +27,12 @@ export function LandingFooter() {
             privacy
           </Link>
           <Dot />
-          <span className="text-xs leading-none text-ink/35">source</span>
+          <Link href="https://github.com/d-voorhees/bird-by-bird.git" className={footerLinkClass}>
+          source</Link>
           <Dot />
-          <span className="text-xs leading-none text-ink/35">changelog</span>
-          <Dot />
-          <span className="text-xs leading-none text-ink/35">build notes</span>
+          <Link href="https://github.com/d-voorhees/bird-by-bird/blob/main/CHANGELOG.md" className={footerLinkClass}>
+          changelog</Link>
+          
         </nav>
       </div>
     </footer>
