@@ -61,8 +61,18 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [client]);
 
   useEffect(() => {
+    // Hydrate quickly from Apollo cache when available, then verify in background.
+    try {
+      const cached = client.readQuery<{ me: User | null }>({ query: ME_QUERY });
+      if (cached) {
+        setUser(cached.me ?? null);
+        setLoading(false);
+      }
+    } catch {
+      // Cache miss is expected on first load.
+    }
     void refreshUser();
-  }, [refreshUser]);
+  }, [client, refreshUser]);
 
   const signOut = useCallback(async () => {
     await client.mutate({ mutation: SIGN_OUT_MUTATION });

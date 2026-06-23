@@ -139,7 +139,6 @@ function MockBirdView() {
       <p className="font-display text-xl leading-tight text-ink sm:text-2xl">
         resend email routing info
       </p>
-      <p className="mt-2 text-xs text-ink/50">confirm dkim is correct</p>
       <p className="mt-3 text-sm text-ink/55">One task on screen. Everything else out of sight.</p>
       <div className="mt-6 flex justify-center gap-3">
         <span className="min-w-[5rem] rounded-md bg-accent px-4 py-2 text-xs font-medium text-accent-fg">
@@ -156,7 +155,7 @@ function MockBirdView() {
 function MockHistoryView() {
   const items: (MockTask & { time: string })[] = [
     { title: "Write the agenda so meeting has a point", bird: "Artboard12.svg", time: "June 19 10:27am" },
-    { title: "finish chapter 2", bird: "Artboard21.svg", time: "June 19 9:14am" },
+    { title: "finish chapter 2", bird: "Artboard3.svg", time: "June 19 9:14am" },
   ];
 
   return (

@@ -12,6 +12,7 @@ from core.models import Session, User
 
 SESSION_COOKIE_NAME = "bird_session"
 SESSION_DURATION_DAYS = 30
+SESSION_REFRESH_WINDOW = timedelta(days=1)
 
 
 def _utcnow() -> datetime:
@@ -39,7 +40,10 @@ def create_session(user: User) -> tuple[Session, str]:
 
 
 def refresh_session(session: Session) -> None:
-    session.expires_at = _utcnow() + timedelta(days=SESSION_DURATION_DAYS)
+    now = _utcnow()
+    if session.expires_at - now > SESSION_REFRESH_WINDOW:
+        return
+    session.expires_at = now + timedelta(days=SESSION_DURATION_DAYS)
     session.save(update_fields=["expires_at"])
 
 
