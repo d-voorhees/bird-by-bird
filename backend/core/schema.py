@@ -10,6 +10,7 @@ from core.auth import SESSION_COOKIE_NAME, cookie_settings, create_session, get_
 from core.email_verification import create_and_send_verification_email, verify_email_token
 from core.password_reset import create_and_send_password_reset_email, reset_password_with_token
 from core.models import Session, Task, TaskStatus, User
+from core.rate_limit import is_rate_limited
 
 
 class TaskStatusEnum(graphene.Enum):
@@ -102,6 +103,8 @@ class SignUp(graphene.Mutation):
     Output = AuthPayload
 
     def mutate(self, info: graphene.ResolveInfo, email: str, password: str) -> AuthPayload:
+        if is_rate_limited(info.context.request, "sign_up", limit=5, window=3600):
+            raise GraphQLError("Too many sign-up attempts. Please try again later.")
         normalized_email = email.strip().lower()
         if not normalized_email or not password:
             raise GraphQLError("Email and password are required")
@@ -131,6 +134,8 @@ class SignIn(graphene.Mutation):
     Output = AuthPayload
 
     def mutate(self, info: graphene.ResolveInfo, email: str, password: str) -> AuthPayload:
+        if is_rate_limited(info.context.request, "sign_in", limit=10, window=900):
+            raise GraphQLError("Too many sign-in attempts. Please try again later.")
         normalized_email = email.strip().lower()
         try:
             user = User.objects.get(email=normalized_email)
@@ -347,6 +352,8 @@ class ResendVerificationEmail(graphene.Mutation):
     ok = graphene.Boolean(required=True)
 
     def mutate(self, info: graphene.ResolveInfo) -> "ResendVerificationEmail":
+        if is_rate_limited(info.context.request, "resend_verification", limit=3, window=1800):
+            raise GraphQLError("Too many requests. Please try again later.")
         user = _require_user(info)
         if user.email_verified:
             raise GraphQLError("Email is already verified")
@@ -364,17 +371,17 @@ class RequestPasswordReset(graphene.Mutation):
     ok = graphene.Boolean(required=True)
 
     def mutate(self, info: graphene.ResolveInfo, email: str) -> "RequestPasswordReset":
+        if is_rate_limited(info.context.request, "password_reset", limit=5, window=3600):
+            raise GraphQLError("Too many requests. Please try again later.")
         normalized_email = email.strip().lower()
         if not normalized_email:
             raise GraphQLError("Email is required")
 
         try:
             user = User.objects.get(email=normalized_email)
-        except User.DoesNotExist:
-            raise GraphQLError("No account found for that email address.") from None
-
-        try:
             create_and_send_password_reset_email(user)
+        except User.DoesNotExist:
+            pass  # don't reveal whether the email exists
         except Exception as exc:
             raise GraphQLError("Could not send reset email. Please try again.") from exc
 

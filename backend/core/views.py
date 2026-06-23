@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
@@ -33,7 +34,7 @@ class BirdGraphQLView(GraphQLView):
         return response
 
 
-graphql_view = csrf_exempt(BirdGraphQLView.as_view(graphiql=True))
+graphql_view = csrf_exempt(BirdGraphQLView.as_view(graphiql=settings.DEBUG))
 
 
 def health_check(_request: HttpRequest) -> JsonResponse:

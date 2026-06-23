@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from uuid import UUID
@@ -81,7 +80,7 @@ def get_user_from_request(request: HttpRequest) -> User | None:
 
 
 def cookie_settings() -> dict[str, Any]:
-    secure = os.environ.get("DJANGO_COOKIE_SECURE", "false").lower() == "true"
+    secure = not settings.DEBUG
     return {
         "key": SESSION_COOKIE_NAME,
         "httponly": True,
