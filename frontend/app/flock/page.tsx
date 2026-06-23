@@ -220,10 +220,10 @@ function FlockScreen() {
             ) : historyError ? (
               <p className="text-sm text-red-800">Could not load completed tasks.</p>
             ) : flownTasks.length === 0 ? (
-              <p className="text-sm text-ink/40">Nothing completed yet.</p>
+              <p className="text-sm text-ink/40">Nothing completed yet today.</p>
             ) : tasksFlownToday.length === 0 ? (
               <FlockListFooter
-                list={<p className="text-sm text-ink/40">Nothing yet completed today.</p>}
+                list={<p className="text-sm text-ink/40">Nothing completed yet today.</p>}
                 action={
                   hasOlderHistory ? (
                     <FlockSecondaryLink href="/history">older history</FlockSecondaryLink>

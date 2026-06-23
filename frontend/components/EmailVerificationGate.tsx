@@ -11,9 +11,8 @@ import { notify } from "@/components/ToastHost";
 import { RESEND_VERIFICATION_EMAIL_MUTATION } from "@/lib/graphql/operations";
 
 export function EmailVerificationGate() {
-  const { user, refreshUser } = useAuth();
+  const { user } = useAuth();
   const [sent, setSent] = useState(false);
-  const [checking, setChecking] = useState(false);
   const [resend, { loading }] = useMutation(RESEND_VERIFICATION_EMAIL_MUTATION);
 
   if (!user) {
@@ -27,15 +26,6 @@ export function EmailVerificationGate() {
       notify("Verification email sent. Check your inbox.");
     } catch (error) {
       notify(error instanceof Error ? error.message : "Could not resend email");
-    }
-  };
-
-  const handleCheckVerified = async () => {
-    setChecking(true);
-    try {
-      await refreshUser();
-    } finally {
-      setChecking(false);
     }
   };
 
@@ -73,14 +63,6 @@ export function EmailVerificationGate() {
               {loading ? "Sending…" : "Resend verification email"}
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => void handleCheckVerified()}
-            disabled={checking}
-            className="mt-8 w-full rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg transition hover:bg-accent/90 disabled:opacity-50"
-          >
-            {checking ? "Checking…" : "I've verified my email"}
-          </button>
         </div>
       </div>
       <AuthCreditsFooter />

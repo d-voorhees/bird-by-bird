@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery } from "@apollo/client/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { ProtectedShell } from "@/components/AuthShell";
@@ -14,6 +15,7 @@ import {
   COMPLETE_TASK_MUTATION,
   CURRENT_BIRD_QUERY,
   FLOCK_QUERY,
+  HISTORY_QUERY,
   SKIP_TASK_MUTATION,
 } from "@/lib/graphql/operations";
 import type { Task } from "@/lib/types";
@@ -21,9 +23,52 @@ import type { Task } from "@/lib/types";
 export default function HomePage() {
   return (
     <ProtectedShell>
-      <BirdScreen />
+      <ZeroTasksGate>
+        <BirdScreen />
+      </ZeroTasksGate>
     </ProtectedShell>
   );
+}
+
+function ZeroTasksGate({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const { data: flockData, loading: flockLoading } = useQuery<{ flock: Task[] }>(
+    FLOCK_QUERY,
+  );
+  const { data: historyData, loading: historyLoading } = useQuery<{ history: Task[] }>(
+    HISTORY_QUERY,
+    { variables: { limit: 1, offset: 0 } },
+  );
+
+  const tasksLoading = flockLoading || historyLoading;
+  const hasNoTasks =
+    (flockData?.flock?.length ?? 0) === 0 && (historyData?.history?.length ?? 0) === 0;
+
+  useEffect(() => {
+    if (!tasksLoading && hasNoTasks) {
+      router.replace("/first-bird");
+    }
+  }, [tasksLoading, hasNoTasks, router]);
+
+  if (tasksLoading || hasNoTasks) {
+    return (
+      <main className="page-bird flex min-h-screen flex-col bg-paper text-ink">
+        <header className="flex items-center justify-end px-6 py-5 text-sm">
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <Link href="/flock" className="text-ink/50 transition hover:text-ink">
+              Flock →
+            </Link>
+          </div>
+        </header>
+        <section className="flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-8">
+          <p className="text-ink/40">Loading…</p>
+        </section>
+      </main>
+    );
+  }
+
+  return <>{children}</>;
 }
 
 function BirdScreen() {

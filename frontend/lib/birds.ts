@@ -12,7 +12,6 @@ export const BIRD_IMAGES = [
   "Artboard11.svg",
   "Artboard12.svg",
   "Artboard13.svg",
-  "Artboard14.svg",
   "Artboard16.svg",
   "Artboard17.svg",
   "Artboard18.svg",

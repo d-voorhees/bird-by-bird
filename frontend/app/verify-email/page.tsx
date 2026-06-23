@@ -6,12 +6,14 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/components/Providers";
 import { VERIFY_EMAIL_MUTATION } from "@/lib/graphql/operations";
 
 type VerifyState = "loading" | "success" | "error";
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
+  const { refreshUser } = useAuth();
   const token = searchParams.get("token");
   const [state, setState] = useState<VerifyState>("loading");
   const [message, setMessage] = useState("");
@@ -25,15 +27,16 @@ function VerifyEmailContent() {
     }
 
     void verifyEmail({ variables: { token } })
-      .then(() => {
+      .then(async () => {
+        await refreshUser();
         setState("success");
-        setMessage("Your email is verified. You can close this page or continue using Bird by Bird.");
+        setMessage("Thanks, your email is verified.");
       })
       .catch((error: unknown) => {
         setState("error");
         setMessage(error instanceof Error ? error.message : "Verification failed.");
       });
-  }, [token, verifyEmail]);
+  }, [token, verifyEmail, refreshUser]);
 
   return (
     <section className="mx-auto w-full max-w-sm flex-1 px-6 pb-24 pt-16 text-center">
@@ -46,7 +49,7 @@ function VerifyEmailContent() {
           </h1>
           <p className="mt-4 text-sm text-ink/70">{message}</p>
           <p className="mt-8">
-            <Link href="/" className="text-sm text-ink underline-offset-2 hover:underline">
+            <Link href="/first-bird" className="text-sm text-ink underline-offset-2 hover:underline">
               Go to Bird by Bird →
             </Link>
           </p>

@@ -439,7 +439,7 @@ class TestTasks:
     def test_bird_images_unique_per_cycle(self, client: Client, user: User) -> None:
         auth_client(client, user)
         images: list[str] = []
-        for index in range(27):
+        for index in range(26):
             response = graphql(
                 client,
                 f'mutation {{ addTask(title: "Bird {index}") {{ birdImage }} }}',
@@ -447,5 +447,5 @@ class TestTasks:
             assert "errors" not in response
             images.append(response["data"]["addTask"]["birdImage"])
 
-        assert len(set(images)) == 27
+        assert len(set(images)) == 26
         assert all(image.endswith(".svg") for image in images)
