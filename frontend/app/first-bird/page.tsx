@@ -37,12 +37,12 @@ function FirstBirdScreen() {
 
   useEffect(() => {
     if (!tasksLoading && hasTasks) {
-      router.replace("/");
+      router.replace("/focus");
     }
   }, [tasksLoading, hasTasks, router]);
 
   const handleTaskAdded = () => {
-    router.push("/");
+    router.push("/focus");
   };
 
   if (tasksLoading || hasTasks) {

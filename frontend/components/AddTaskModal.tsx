@@ -6,9 +6,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { notify } from "@/components/ToastHost";
 import {
   ADD_TASK_MUTATION,
-  CURRENT_BIRD_QUERY,
-  FLOCK_QUERY,
 } from "@/lib/graphql/operations";
+import { addTaskInCache } from "@/lib/taskCache";
 import type { Task } from "@/lib/types";
 
 type AddTaskModalProps = {
@@ -30,9 +29,7 @@ export function AddTaskModal({
   const [showNotes, setShowNotes] = useState(false);
   const [doNext, setDoNext] = useState(false);
 
-  const [addTask, { loading }] = useMutation<{ addTask: Task }>(ADD_TASK_MUTATION, {
-    refetchQueries: [{ query: CURRENT_BIRD_QUERY }, { query: FLOCK_QUERY }],
-  });
+  const [addTask, { loading }] = useMutation<{ addTask: Task }>(ADD_TASK_MUTATION);
 
   const reset = useCallback(() => {
     setTitle("");
@@ -71,13 +68,19 @@ export function AddTaskModal({
     event.preventDefault();
     const trimmed = title.trim();
     if (!trimmed) return;
+    const shouldDoNext = focusNewTask || doNext;
 
     try {
       const result = await addTask({
         variables: {
           title: trimmed,
           notes: notes.trim() || null,
-          doNext: focusNewTask || doNext,
+          doNext: shouldDoNext,
+        },
+        update(cache, mutationResult) {
+          const newTask = mutationResult.data?.addTask;
+          if (!newTask) return;
+          addTaskInCache(cache, newTask, shouldDoNext);
         },
       });
       const newTask = result.data?.addTask;

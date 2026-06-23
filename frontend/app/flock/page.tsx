@@ -44,6 +44,7 @@ import {
   HISTORY_QUERY,
   REORDER_TASKS_MUTATION,
 } from "@/lib/graphql/operations";
+import { markTaskDoneInCache } from "@/lib/taskCache";
 import { filterCompletedToday, isCompletedToday, type Task } from "@/lib/types";
 
 export default function FlockPage() {
@@ -278,9 +279,7 @@ function AwaitingFlightRow({ task }: { task: Task }) {
     { query: HISTORY_QUERY, variables: { limit: 50, offset: 0 } },
   ];
 
-  const [completeTask, { loading: completing }] = useMutation(COMPLETE_TASK_MUTATION, {
-    refetchQueries: refetch,
-  });
+  const [completeTask, { loading: completing }] = useMutation(COMPLETE_TASK_MUTATION);
   const [deleteTask, { loading: deleting }] = useMutation(DELETE_TASK_MUTATION, {
     refetchQueries: refetch,
   });
@@ -310,6 +309,26 @@ function AwaitingFlightRow({ task }: { task: Task }) {
 
   const busy = completing || deleting;
 
+  const handleComplete = async () => {
+    const optimisticCompletedAt = new Date().toISOString();
+
+    await completeTask({
+      variables: { id: task.id },
+      optimisticResponse: {
+        completeTask: {
+          __typename: "TaskType",
+          id: task.id,
+          status: "DONE",
+          completedAt: optimisticCompletedAt,
+        },
+      },
+      update(cache, result) {
+        const completedAt = result.data?.completeTask?.completedAt ?? optimisticCompletedAt;
+        markTaskDoneInCache(cache, task, completedAt, [50]);
+      },
+    });
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -324,7 +343,7 @@ function AwaitingFlightRow({ task }: { task: Task }) {
           checked={false}
           disabled={busy}
           label={`Mark ${task.title} done`}
-          onToggle={() => void runAction(() => completeTask({ variables: { id: task.id } }))}
+          onToggle={() => void runAction(handleComplete)}
         />
 
         <BirdImage filename={task.birdImage} widthPx={100} />

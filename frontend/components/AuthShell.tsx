@@ -44,7 +44,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && user) {
-      router.replace("/");
+      router.replace("/focus");
     }
   }, [loading, user, router]);
 

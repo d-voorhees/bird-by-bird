@@ -8,12 +8,10 @@ import { FlockRowText } from "@/components/FlockRowText";
 import { SquareCheckbox } from "@/components/SquareCheckbox";
 import { notify } from "@/components/ToastHost";
 import {
-  CURRENT_BIRD_QUERY,
-  FLOCK_QUERY,
-  HISTORY_QUERY,
   UNCOMPLETE_TASK_MUTATION,
 } from "@/lib/graphql/operations";
 import { formatCompletedAt } from "@/lib/format";
+import { uncompleteTaskInCache } from "@/lib/taskCache";
 import type { Task } from "@/lib/types";
 
 type CompletedTaskRowProps = {
@@ -29,15 +27,7 @@ export function CompletedTaskRow({
   showBird = false,
   className = "flock-list-item rounded-lg border border-stone/15 bg-surface/25 px-3 py-2",
 }: CompletedTaskRowProps) {
-  const refetch = [
-    { query: FLOCK_QUERY },
-    { query: CURRENT_BIRD_QUERY },
-    { query: HISTORY_QUERY, variables: { limit: historyLimit, offset: 0 } },
-  ];
-
-  const [uncompleteTask, { loading }] = useMutation(UNCOMPLETE_TASK_MUTATION, {
-    refetchQueries: refetch,
-  });
+  const [uncompleteTask, { loading }] = useMutation(UNCOMPLETE_TASK_MUTATION);
 
   const completedLabel = task.completedAt
     ? formatCompletedAt(task.completedAt)
@@ -45,7 +35,23 @@ export function CompletedTaskRow({
 
   const handleUncheck = async () => {
     try {
-      await uncompleteTask({ variables: { id: task.id } });
+      const optimisticPosition = Number.MAX_SAFE_INTEGER;
+      await uncompleteTask({
+        variables: { id: task.id },
+        optimisticResponse: {
+          uncompleteTask: {
+            __typename: "TaskType",
+            id: task.id,
+            status: "ACTIVE",
+            position: optimisticPosition,
+            completedAt: null,
+          },
+        },
+        update(cache, result) {
+          const position = result.data?.uncompleteTask?.position ?? optimisticPosition;
+          uncompleteTaskInCache(cache, task, position, historyLimit);
+        },
+      });
     } catch (error) {
       notify(error instanceof Error ? error.message : "Could not restore task");
     }

@@ -30,7 +30,7 @@ function SignInForm() {
     try {
       await signIn({ variables: { email, password } });
       await refreshUser();
-      router.replace("/");
+      router.replace("/focus");
     } catch (error) {
       notify(error instanceof Error ? error.message : "Sign in failed");
     }

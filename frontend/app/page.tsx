@@ -1,277 +1,132 @@
 "use client";
 
-import { useMutation, useQuery } from "@apollo/client/react";
+import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
 
-import { ProtectedShell } from "@/components/AuthShell";
-import { AddTaskModal } from "@/components/AddTaskModal";
-import { BirdImage } from "@/components/BirdImage";
-import { EditableTaskContent } from "@/components/EditableTaskContent";
+import { FaqAccordion } from "@/components/landing/FaqAccordion";
+import { HowItWorksRail } from "@/components/landing/HowItWorksRail";
+import { LandingCTA } from "@/components/landing/LandingCTA";
+import { LandingFooter } from "@/components/landing/LandingFooter";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { notify } from "@/components/ToastHost";
-import {
-  COMPLETE_TASK_MUTATION,
-  CURRENT_BIRD_QUERY,
-  FLOCK_QUERY,
-  HISTORY_QUERY,
-  SKIP_TASK_MUTATION,
-} from "@/lib/graphql/operations";
-import type { Task } from "@/lib/types";
 
 export default function HomePage() {
   return (
-    <ProtectedShell>
-      <ZeroTasksGate>
-        <BirdScreen />
-      </ZeroTasksGate>
-    </ProtectedShell>
-  );
-}
-
-function ZeroTasksGate({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const { data: flockData, loading: flockLoading } = useQuery<{ flock: Task[] }>(
-    FLOCK_QUERY,
-  );
-  const { data: historyData, loading: historyLoading } = useQuery<{ history: Task[] }>(
-    HISTORY_QUERY,
-    { variables: { limit: 1, offset: 0 } },
-  );
-
-  const tasksLoading = flockLoading || historyLoading;
-  const hasNoTasks =
-    (flockData?.flock?.length ?? 0) === 0 && (historyData?.history?.length ?? 0) === 0;
-
-  useEffect(() => {
-    if (!tasksLoading && hasNoTasks) {
-      router.replace("/first-bird");
-    }
-  }, [tasksLoading, hasNoTasks, router]);
-
-  if (tasksLoading || hasNoTasks) {
-    return (
-      <main className="page-bird flex min-h-screen flex-col bg-paper text-ink">
-        <header className="flex items-center justify-end px-6 py-5 text-sm">
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <Link href="/flock" className="text-ink/50 transition hover:text-ink">
-              Flock →
-            </Link>
-          </div>
-        </header>
-        <section className="flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-8">
-          <p className="text-ink/40">Loading…</p>
-        </section>
-      </main>
-    );
-  }
-
-  return <>{children}</>;
-}
-
-function BirdScreen() {
-  const [addOpen, setAddOpen] = useState(false);
-  const [displayTask, setDisplayTask] = useState<Task | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [showSingleBirdPrompt, setShowSingleBirdPrompt] = useState(false);
-
-  const { data, loading, refetch } = useQuery<{ currentBird: Task | null }>(
-    CURRENT_BIRD_QUERY,
-  );
-  const { data: flockData } = useQuery<{ flock: Task[] }>(FLOCK_QUERY);
-
-  const flockCount = flockData?.flock?.length ?? 0;
-
-  const [completeTask, { loading: completing }] = useMutation(
-    COMPLETE_TASK_MUTATION,
-    { refetchQueries: [{ query: CURRENT_BIRD_QUERY }, { query: FLOCK_QUERY }] },
-  );
-
-  const [skipTask, { loading: skipping }] = useMutation(SKIP_TASK_MUTATION, {
-    refetchQueries: [{ query: CURRENT_BIRD_QUERY }, { query: FLOCK_QUERY }],
-  });
-
-  const currentBird = data?.currentBird ?? null;
-
-  useEffect(() => {
-    if (!isTransitioning) {
-      setDisplayTask(currentBird);
-    }
-  }, [currentBird, isTransitioning]);
-
-  useEffect(() => {
-    if (flockCount > 1) {
-      setShowSingleBirdPrompt(false);
-    }
-  }, [flockCount]);
-
-  const runWithTransition = useCallback(
-    async (action: () => Promise<void>) => {
-      if (!displayTask) return;
-      setIsTransitioning(true);
-      await new Promise((resolve) => window.setTimeout(resolve, 180));
-      try {
-        await action();
-        await refetch();
-      } catch (error) {
-        notify(error instanceof Error ? error.message : "Something went wrong");
-      } finally {
-        window.setTimeout(() => setIsTransitioning(false), 180);
-      }
-    },
-    [displayTask, refetch],
-  );
-
-  const handleDone = () =>
-    runWithTransition(async () => {
-      if (!displayTask) return;
-      await completeTask({ variables: { id: displayTask.id } });
-    });
-
-  const handleSkip = useCallback(() => {
-    if (flockCount <= 1) {
-      setShowSingleBirdPrompt(true);
-      return;
-    }
-    void runWithTransition(async () => {
-      if (!displayTask) return;
-      await skipTask({ variables: { id: displayTask.id } });
-    });
-  }, [displayTask, flockCount, runWithTransition, skipTask]);
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (addOpen) return;
-      const target = event.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
-
-      if (event.key === "d" || event.key === "D") {
-        event.preventDefault();
-        void handleDone();
-      }
-      if (event.key === "s" || event.key === "S") {
-        event.preventDefault();
-        void handleSkip();
-      }
-      if (event.key === "a" || event.key === "A") {
-        event.preventDefault();
-        setAddOpen(true);
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [addOpen, handleDone, handleSkip]);
-
-  const handleTaskAdded = useCallback((task: Task) => {
-    setDisplayTask(task);
-    setShowSingleBirdPrompt(false);
-  }, []);
-
-  const busy = loading || completing || skipping || isTransitioning;
-
-  return (
-    <main className="page-bird flex min-h-screen flex-col bg-paper text-ink">
-      <header className="flex items-center justify-end px-6 py-5 text-sm">
+    <main className="flex min-h-screen flex-col bg-paper text-ink">
+      <header className="flex items-center justify-between px-6 py-5 text-sm">
+        <span className="font-display text-lg">Bird by Bird</span>
         <div className="flex items-center gap-4">
           <ThemeToggle />
-          <Link
-            href="/flock"
-            className="text-ink/50 transition hover:text-ink"
-          >
-            Flock →
+          <Link href="/sign-in" className="text-ink/50 transition hover:text-ink">
+            Sign in →
           </Link>
         </div>
       </header>
 
-      <section className="flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-8">
-        {loading && !data ? (
-          <p className="text-ink/40">Loading…</p>
-        ) : showSingleBirdPrompt && displayTask ? (
-          <div className="max-w-2xl text-center">
-            <p className="font-display text-2xl sm:text-3xl">
-              There&apos;s only one bird currently.
-            </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => setShowSingleBirdPrompt(false)}
-                className="rounded-md border border-stone/30 px-6 py-3 text-sm font-medium text-ink transition hover:border-ink/30"
-              >
-                Go back
-              </button>
-              <button
-                type="button"
-                onClick={() => setAddOpen(true)}
-                className="rounded-md border border-stone/30 px-6 py-3 text-sm font-medium text-ink transition hover:border-ink/30"
-              >
-                Add another
-              </button>
-            </div>
-          </div>
-        ) : displayTask ? (
-          <div
-            className={`max-w-2xl text-center transition-opacity duration-[180ms] ${
-              isTransitioning ? "opacity-0" : "opacity-100"
-            }`}
-          >
-            <BirdImage
-              filename={displayTask.birdImage}
-              widthPx={300}
-              className="mx-auto mb-6"
-            />
-            <EditableTaskContent task={displayTask} variant="hero" align="center" />
-          </div>
-        ) : (
-          <p className="text-ink/40">No more birds</p>
-        )}
+      <section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center px-6 pb-20 pt-12 text-center sm:pt-16">
+        <Image
+          src="/img/Artboard27.svg"
+          alt=""
+          width={300}
+          height={300}
+          className="mb-8 h-auto w-[300px]"
+          priority
+        />
+        <h1 className="font-display text-3xl leading-relaxed sm:text-4xl md:text-5xl">
+          Just take it bird by bird.
+        </h1>
+        <p className="mt-6 max-w-xl text-sm leading-relaxed text-ink/75 sm:text-base">
+          Bird by Bird is a focus tool for people who already have too many places to keep their
+          tasks. Pull a short flock out of whatever backlog you use, and the application shows you
+          one task at a time until the flock is clear.
+        </p>
+        <LandingCTA className="mt-10" />
       </section>
 
-      {!showSingleBirdPrompt ? (
-        <div className="flex justify-center px-6 pb-8">
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {displayTask ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => void handleDone()}
-                  disabled={busy}
-                  className="min-w-[7rem] rounded-md bg-accent px-6 py-3 text-sm font-medium text-accent-fg transition hover:bg-accent/90 disabled:opacity-50"
-                  aria-label="Mark task done"
-                >
-                  {completing ? "Done…" : "Done"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void handleSkip()}
-                  disabled={busy}
-                  className="min-w-[7rem] rounded-md border border-stone/30 px-6 py-3 text-sm font-medium text-ink transition hover:border-ink/30 disabled:opacity-50"
-                  aria-label="Skip task"
-                >
-                  {skipping ? "Skip…" : "Skip"}
-                </button>
-              </>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => setAddOpen(true)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-stone/30 text-xl font-medium leading-none text-ink transition hover:border-ink/30"
-              aria-label="Add a new bird"
-            >
-              +
-            </button>
+      <section
+        id="how-it-works"
+        className="border-t border-stone/20 bg-paper px-6 py-16 sm:py-20"
+        aria-labelledby="how-it-works-heading"
+      >
+        <div className="mx-auto w-full max-w-2xl">
+          <h2 id="how-it-works-heading" className="font-display text-2xl sm:text-3xl">
+            How it works
+          </h2>
+          <div className="mt-12">
+            <HowItWorksRail />
           </div>
         </div>
-      ) : null}
+      </section>
 
-      <AddTaskModal
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-        focusNewTask
-        onAdded={handleTaskAdded}
-      />
+      <section
+        className="border-t border-stone/20 px-6 py-16 sm:py-20"
+        aria-labelledby="what-not-heading"
+      >
+        <div className="mx-auto w-full max-w-2xl">
+          <h2 id="what-not-heading" className="font-display text-2xl sm:text-3xl">
+            What Bird by Bird is not
+          </h2>
+          <p className="mt-6 text-sm leading-relaxed text-ink/75 sm:text-base">
+            Bird by Bird is not a replacement for your task manager. The application does not send
+            notifications, track streaks, or let you assign tasks across people, projects, or
+            priorities. The flock holds what you have chosen to focus on. From there, the bird view
+            brings up one item at a time.
+          </p>
+        </div>
+      </section>
+
+      <section
+        className="border-t border-stone/20 px-6 py-16 sm:py-20"
+        aria-labelledby="why-heading"
+      >
+        <div className="mx-auto w-full max-w-2xl">
+          <h2 id="why-heading" className="font-display text-2xl sm:text-3xl">
+            Why
+          </h2>
+          <div className="mt-6 space-y-4 text-sm leading-relaxed text-ink/75 sm:text-base">
+            <p>
+              Knowledge workers lose hours every day to context switching. The cost is the energy
+              spent reloading where you were and what you were doing, every time you bounce between
+              tabs and tools. Most task managers worsen the problem by showing you every open item
+              the moment you sign in.
+            </p>
+            <p>
+              Bird by Bird is a layer that pulls one item out of the noise and gives it the screen
+              until you are done with it. The constraint is the product.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-stone/20 px-6 py-16 sm:py-20" aria-labelledby="try-heading">
+        <div className="mx-auto w-full max-w-2xl">
+          <div className="rounded-lg border border-stone/20 bg-surface/40 px-6 py-10 text-center sm:px-10 sm:py-12">
+            <h2 id="try-heading" className="font-display text-2xl sm:text-3xl">
+              Try it
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-ink/75">
+              Start with one bird. The application is free to use and does not require a credit
+              card.
+            </p>
+            <LandingCTA className="mt-8" />
+          </div>
+        </div>
+      </section>
+
+      <section
+        className="border-t border-stone/20 px-6 py-16 sm:py-20"
+        aria-labelledby="faq-heading"
+      >
+        <div className="mx-auto w-full max-w-2xl">
+          <h2 id="faq-heading" className="font-display text-2xl sm:text-3xl">
+            FAQ
+          </h2>
+          <div className="mt-8">
+            <FaqAccordion />
+          </div>
+        </div>
+      </section>
+
+      <LandingFooter />
     </main>
   );
 }

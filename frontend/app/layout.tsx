@@ -10,6 +10,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Bird",
   description: "One task at a time.",
+  icons: {
+    icon: "/img/Artboard7.svg",
+    shortcut: "/img/Artboard7.svg",
+    apple: "/img/Artboard7.svg",
+  },
 };
 
 const themeInitScript = `(function(){try{var t=localStorage.getItem("bird-theme");document.documentElement.classList.toggle("dark",t==="dark");}catch(e){}})();`;

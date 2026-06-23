@@ -5,6 +5,7 @@ import pytest
 from django.test import Client
 
 from core.auth import SESSION_COOKIE_NAME
+from core.bird_images import BIRD_IMAGE_COUNT
 from core.models import Task, TaskStatus, User
 
 pytestmark = pytest.mark.django_db
@@ -439,7 +440,7 @@ class TestTasks:
     def test_bird_images_unique_per_cycle(self, client: Client, user: User) -> None:
         auth_client(client, user)
         images: list[str] = []
-        for index in range(26):
+        for index in range(BIRD_IMAGE_COUNT):
             response = graphql(
                 client,
                 f'mutation {{ addTask(title: "Bird {index}") {{ birdImage }} }}',
@@ -447,5 +448,5 @@ class TestTasks:
             assert "errors" not in response
             images.append(response["data"]["addTask"]["birdImage"])
 
-        assert len(set(images)) == 26
+        assert len(set(images)) == BIRD_IMAGE_COUNT
         assert all(image.endswith(".svg") for image in images)
