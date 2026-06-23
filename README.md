@@ -1,51 +1,41 @@
-# Bird
+# Bird by Bird
 
-Bird is a single-task focus tool: one active task at a time, a deliberate backlog (the flock), and a quiet history of what you finished. The constraint is the product.
+A single-task focus tool. One active task at a time, a deliberate backlog (the flock), and a quiet history of what you finished. The constraint is the product.
 
-**Current release: v1.1**
+**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.4
 
-## Styling
+---
 
-The UI is built with **Tailwind CSS** (utility classes in components) plus a small amount of custom CSS where needed.
+## Stack
 
-| File | Role |
-|------|------|
-| `frontend/tailwind.config.ts` | Tailwind theme — maps `paper`, `ink`, `accent`, etc. to CSS variables; Geist Mono font; `darkMode: "class"` |
-| `frontend/app/globals.css` | Theme variables (light/dark), flock row layout, checkboxes, inline edit fields |
-| `frontend/app/layout.tsx` | Imports `globals.css`; loads Geist Mono |
-
-Most screens use Tailwind classes directly in JSX. Shared class strings live in small helpers like `historyActionsStyles.ts` and the footer components.
+| Layer | Choice | Why |
+|-------|--------|-----|
+| Frontend | Next.js 15 + TypeScript + Tailwind | App Router, strong typing, fast UI iteration |
+| API | Django 5 + Graphene GraphQL | Explicit schema, mature ORM, revocable sessions |
+| Database | PostgreSQL | Composite constraints for queue positions |
+| Auth | JWT in HTTP-only cookies + sessions table | Revocable server-side sessions, no OAuth scope creep |
+| Package mgmt | pnpm (frontend), uv (backend) | Fast, reproducible installs |
 
 ## Architecture
 
 ```
-┌─────────────┐     HTTP-only JWT cookie      ┌──────────────────┐
-│  Next.js    │ ────────────────────────────► │  Django GraphQL  │
-│  (Vercel)   │         credentials           │  (ECS Fargate)   │
-└─────────────┘                               └────────┬─────────┘
-                                                       │
-                                                       ▼
-                                              ┌──────────────────┐
-                                              │   PostgreSQL     │
-                                              │   (RDS)          │
-                                              └──────────────────┘
+┌─────────────────┐    HTTP-only JWT cookie    ┌──────────────────┐
+│   Next.js       │ ─────────────────────────► │  Django GraphQL  │
+│   (Vercel)      │        credentials         │   (Fly.io)       │
+└─────────────────┘                            └────────┬─────────┘
+                                                        │
+                                                        ▼
+                                               ┌──────────────────┐
+                                               │   PostgreSQL     │
+                                               │   (Fly.io)       │
+                                               └──────────────────┘
 ```
 
 Monorepo layout:
 
-- `frontend/` — Next.js 14 App Router, TypeScript, Tailwind, Apollo Client
+- `frontend/` — Next.js App Router, TypeScript, Tailwind, Apollo Client
 - `backend/` — Django 5, Graphene-Django, JWT auth, pytest
-- `infra/` — reserved for Phase 5 (AWS deployment, not implemented yet)
-
-## Stack and rationale
-
-| Layer | Choice | Why |
-|-------|--------|-----|
-| Frontend | Next.js 14 + TypeScript + Tailwind | App Router, strong typing, fast UI iteration |
-| API | Django + Graphene GraphQL | Explicit schema, mature ORM, portfolio-grade backend |
-| Database | PostgreSQL 15+ | Composite constraints for queue positions |
-| Auth | JWT in HTTP-only cookies + sessions table | Revocable sessions, no OAuth scope creep in v1 |
-| Package mgmt | pnpm (frontend), uv (backend) | Fast, reproducible installs |
+- `infra/` — reserved for future infrastructure-as-code
 
 ## Local development
 
@@ -65,14 +55,14 @@ docker compose up -d postgres
 
 # Option B: Homebrew (macOS)
 brew services start postgresql@15
-createdb bird -O bird  # if not already created
+createdb bird -O bird
 ```
 
-Copy environment variables:
+### Environment variables
 
 ```bash
 cp .env.example .env
-cp frontend/.env.local.example frontend/.env.local  # or use the included .env.local
+cp frontend/.env.local.example frontend/.env.local
 ```
 
 ### Backend
@@ -83,8 +73,6 @@ uv sync
 uv run python manage.py migrate
 uv run python manage.py runserver
 ```
-
-GraphiQL: [http://localhost:8000/graphql/](http://localhost:8000/graphql/)
 
 Run tests:
 
@@ -111,40 +99,51 @@ pnpm lint
 pnpm exec tsc --noEmit
 ```
 
-## GraphQL schema (summary)
+## GraphQL schema
 
 **Queries:** `me`, `currentBird`, `flock`, `history(limit, offset)`
 
-**Mutations:** `signUp`, `signIn`, `signOut`, `addTask`, `completeTask`, `skipTask`, `abandonTask`, `reorderTasks`, `promoteTask`
+**Mutations:**
 
-Three tables only: `users`, `tasks`, `sessions`. Active task positions are unique per user via a partial unique index.
+| Group | Mutations |
+|-------|-----------|
+| Auth | `signUp`, `signIn`, `signOut` |
+| Email | `verifyEmail`, `resendVerificationEmail` |
+| Password | `requestPasswordReset`, `resetPassword` |
+| Tasks | `addTask`, `completeTask`, `uncompleteTask`, `skipTask`, `abandonTask`, `deleteTask`, `updateTask`, `reorderTasks`, `promoteTask`, `clearHistory` |
 
-## Deployment (Phase 5 — deferred)
+Three core tables: `users`, `tasks`, `sessions`. Active task positions are unique per user via a partial unique index. Bird image assignment cycles through all 28 illustrations before repeating.
 
-Planned production path:
+## Deployment
 
-- Frontend → Vercel
-- Django API → AWS ECS Fargate behind ALB
-- Postgres → AWS RDS
-- Secrets → AWS Secrets Manager
-- IaC → Terraform in `infra/`
+| Layer | Platform |
+|-------|----------|
+| Frontend | Vercel |
+| Django API | Fly.io |
+| PostgreSQL | Fly.io |
 
-Not implemented in this repo yet.
+Backend environment variables (secret keys, database URL, SMTP credentials) are stored as Fly secrets and never committed. See `.env.example` for the full variable reference.
 
-## Known limitations / v2 candidates
+## Styling
 
-- **No password reset** — document-only for v1; email flow is a v2 item
-- **No OAuth** — email/password only
-- **Session refresh** — extends `sessions.expires_at` on activity; JWT expiry is set at sign-in
-- **"Completed today"** — derived from the first page of history (50 items), not a dedicated aggregate
+| File | Role |
+|------|------|
+| `frontend/tailwind.config.ts` | Theme — maps `paper`, `ink`, `accent` to CSS variables; Geist Mono font; `darkMode: "class"` |
+| `frontend/app/globals.css` | Theme variables (light/dark), flock row layout, checkboxes, inline edit fields |
 
-Explicitly out of scope: tags, projects, due dates, reminders, sharing, analytics, streaks, search, export.
-
-## Keyboard shortcuts (home)
+## Keyboard shortcuts
 
 | Key | Action |
 |-----|--------|
 | `d` | Done |
 | `s` | Skip |
 | `a` | Add task |
-| `Esc` | Close add modal |
+| `Esc` | Close modal |
+
+## Out of scope
+
+Tags, projects, due dates, reminders, sharing, analytics, streaks, search. The single-task constraint is intentional.
+
+## License
+
+MIT — see [LICENSE](LICENSE)
