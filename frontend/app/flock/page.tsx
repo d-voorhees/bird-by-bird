@@ -144,7 +144,7 @@ function FlockScreen() {
     <main className="page-flock flex min-h-screen flex-col bg-paper text-ink">
       <header className="border-b border-stone/20 px-6 py-5">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-4">
-          <Link href="/" className="font-display text-lg">
+          <Link href="/focus" className="font-display text-lg">
             ← Focus
           </Link>
           <div className="flex items-center gap-4">
