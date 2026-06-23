@@ -83,7 +83,14 @@ function BirdScreen() {
 
   const flockCount = flockData?.flock?.length ?? 0;
 
-  const [completeTask, { loading: completing }] = useMutation(COMPLETE_TASK_MUTATION);
+  const [completeTask, { loading: completing }] = useMutation<
+    {
+      completeTask:
+        | (Pick<Task, "id" | "status" | "completedAt"> & { __typename?: string })
+        | null;
+    },
+    { id: string }
+  >(COMPLETE_TASK_MUTATION);
 
   const [skipTask, { loading: skipping }] = useMutation(SKIP_TASK_MUTATION);
 

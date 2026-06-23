@@ -279,7 +279,14 @@ function AwaitingFlightRow({ task }: { task: Task }) {
     { query: HISTORY_QUERY, variables: { limit: 50, offset: 0 } },
   ];
 
-  const [completeTask, { loading: completing }] = useMutation(COMPLETE_TASK_MUTATION);
+  const [completeTask, { loading: completing }] = useMutation<
+    {
+      completeTask:
+        | (Pick<Task, "id" | "status" | "completedAt"> & { __typename?: string })
+        | null;
+    },
+    { id: string }
+  >(COMPLETE_TASK_MUTATION);
   const [deleteTask, { loading: deleting }] = useMutation(DELETE_TASK_MUTATION, {
     refetchQueries: refetch,
   });

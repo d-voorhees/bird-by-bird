@@ -11,14 +11,14 @@ type FlockData = { flock: Task[] };
 type CurrentBirdData = { currentBird: Task | null };
 type HistoryData = { history: Task[] };
 
-function removeFromFlock(cache: ApolloCache<unknown>, taskId: string) {
+function removeFromFlock(cache: ApolloCache, taskId: string) {
   cache.updateQuery<FlockData>({ query: FLOCK_QUERY }, (data) => {
     if (!data) return data;
     return { flock: data.flock.filter((task) => task.id !== taskId) };
   });
 }
 
-function setCurrentBirdFromFlockIfMatching(cache: ApolloCache<unknown>, taskId: string) {
+function setCurrentBirdFromFlockIfMatching(cache: ApolloCache, taskId: string) {
   cache.updateQuery<CurrentBirdData>({ query: CURRENT_BIRD_QUERY }, (data) => {
     if (!data) return data;
     if (data.currentBird?.id !== taskId) return data;
@@ -32,7 +32,7 @@ function setCurrentBirdFromFlockIfMatching(cache: ApolloCache<unknown>, taskId: 
 }
 
 function prependToHistory(
-  cache: ApolloCache<unknown>,
+  cache: ApolloCache,
   task: Task,
   limit: number,
 ) {
@@ -48,7 +48,7 @@ function prependToHistory(
 }
 
 export function markTaskDoneInCache(
-  cache: ApolloCache<unknown>,
+  cache: ApolloCache,
   task: Task,
   completedAt: string,
   historyLimits: number[],
@@ -66,7 +66,7 @@ export function markTaskDoneInCache(
 }
 
 export function uncompleteTaskInCache(
-  cache: ApolloCache<unknown>,
+  cache: ApolloCache,
   task: Task,
   position: number,
   historyLimit: number,
@@ -99,7 +99,7 @@ export function uncompleteTaskInCache(
   });
 }
 
-export function skipTaskInCache(cache: ApolloCache<unknown>, taskId: string) {
+export function skipTaskInCache(cache: ApolloCache, taskId: string) {
   cache.updateQuery<FlockData>({ query: FLOCK_QUERY }, (data) => {
     if (!data) return data;
     const currentIndex = data.flock.findIndex((task) => task.id === taskId);
@@ -117,7 +117,7 @@ export function skipTaskInCache(cache: ApolloCache<unknown>, taskId: string) {
 }
 
 export function addTaskInCache(
-  cache: ApolloCache<unknown>,
+  cache: ApolloCache,
   task: Task,
   doNext: boolean,
 ) {

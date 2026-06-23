@@ -27,7 +27,14 @@ export function CompletedTaskRow({
   showBird = false,
   className = "flock-list-item rounded-lg border border-stone/15 bg-surface/25 px-3 py-2",
 }: CompletedTaskRowProps) {
-  const [uncompleteTask, { loading }] = useMutation(UNCOMPLETE_TASK_MUTATION);
+  const [uncompleteTask, { loading }] = useMutation<
+    {
+      uncompleteTask:
+        | (Pick<Task, "id" | "status" | "position" | "completedAt"> & { __typename?: string })
+        | null;
+    },
+    { id: string }
+  >(UNCOMPLETE_TASK_MUTATION);
 
   const completedLabel = task.completedAt
     ? formatCompletedAt(task.completedAt)
