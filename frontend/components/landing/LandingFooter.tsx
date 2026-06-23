@@ -27,7 +27,7 @@ export function LandingFooter() {
             privacy
           </Link>
           <Dot />
-          <Link href="https://github.com/d-voorhees/bird-by-bird.git" className={footerLinkClass}>
+          <Link href="https://github.com/d-voorhees/bird-by-bird" className={footerLinkClass}>
           source</Link>
           <Dot />
           <Link href="https://github.com/d-voorhees/bird-by-bird/blob/main/CHANGELOG.md" className={footerLinkClass}>
