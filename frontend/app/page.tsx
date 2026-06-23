@@ -194,13 +194,22 @@ function BirdScreen() {
             <p className="font-display text-2xl sm:text-3xl">
               There&apos;s only one bird currently.
             </p>
-            <button
-              type="button"
-              onClick={() => setAddOpen(true)}
-              className="mt-6 rounded-md border border-stone/30 px-6 py-3 text-sm font-medium text-ink transition hover:border-ink/30"
-            >
-              Add another
-            </button>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowSingleBirdPrompt(false)}
+                className="rounded-md border border-stone/30 px-6 py-3 text-sm font-medium text-ink transition hover:border-ink/30"
+              >
+                Go back
+              </button>
+              <button
+                type="button"
+                onClick={() => setAddOpen(true)}
+                className="rounded-md border border-stone/30 px-6 py-3 text-sm font-medium text-ink transition hover:border-ink/30"
+              >
+                Add another
+              </button>
+            </div>
           </div>
         ) : displayTask ? (
           <div
@@ -220,40 +229,42 @@ function BirdScreen() {
         )}
       </section>
 
-      <div className="flex justify-center px-6 pb-8">
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          {displayTask ? (
-            <>
-              <button
-                type="button"
-                onClick={() => void handleDone()}
-                disabled={busy}
-                className="min-w-[7rem] rounded-md bg-accent px-6 py-3 text-sm font-medium text-accent-fg transition hover:bg-accent/90 disabled:opacity-50"
-                aria-label="Mark task done"
-              >
-                {completing ? "Done…" : "Done"}
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleSkip()}
-                disabled={busy}
-                className="min-w-[7rem] rounded-md border border-stone/30 px-6 py-3 text-sm font-medium text-ink transition hover:border-ink/30 disabled:opacity-50"
-                aria-label="Skip task"
-              >
-                {skipping ? "Skip…" : "Skip"}
-              </button>
-            </>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => setAddOpen(true)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-stone/30 text-xl font-medium leading-none text-ink transition hover:border-ink/30"
-            aria-label="Add a new bird"
-          >
-            +
-          </button>
+      {!showSingleBirdPrompt ? (
+        <div className="flex justify-center px-6 pb-8">
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {displayTask ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => void handleDone()}
+                  disabled={busy}
+                  className="min-w-[7rem] rounded-md bg-accent px-6 py-3 text-sm font-medium text-accent-fg transition hover:bg-accent/90 disabled:opacity-50"
+                  aria-label="Mark task done"
+                >
+                  {completing ? "Done…" : "Done"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleSkip()}
+                  disabled={busy}
+                  className="min-w-[7rem] rounded-md border border-stone/30 px-6 py-3 text-sm font-medium text-ink transition hover:border-ink/30 disabled:opacity-50"
+                  aria-label="Skip task"
+                >
+                  {skipping ? "Skip…" : "Skip"}
+                </button>
+              </>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setAddOpen(true)}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-stone/30 text-xl font-medium leading-none text-ink transition hover:border-ink/30"
+              aria-label="Add a new bird"
+            >
+              +
+            </button>
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <AddTaskModal
         open={addOpen}
