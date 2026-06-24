@@ -142,14 +142,14 @@ function FlockScreen() {
 
   return (
     <main className="page-flock flex min-h-screen flex-col bg-paper text-ink">
-      <header className="border-b border-stone/20 px-6 py-5">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4">
-          <Link href="/focus" className="font-display text-lg">
+      <header className="border-b border-stone/20 px-4 py-3 sm:px-6 sm:py-5">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-2">
+          <Link href="/focus" className="shrink-0 font-display text-base sm:text-lg">
             ← Focus
           </Link>
-          <div className="flex items-center gap-4">
-            <p className="text-sm text-ink/55">
-              {completedToday} completed today ·{" "}
+          <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+            <p className="truncate text-xs text-ink/55 sm:text-sm">
+              {completedToday} done today ·{" "}
               <Link href="/history" className="underline-offset-2 hover:underline">
                 History
               </Link>
