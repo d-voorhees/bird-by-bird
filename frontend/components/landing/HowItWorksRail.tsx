@@ -212,7 +212,7 @@ export function HowItWorksRail() {
               <h3 className="font-display text-lg text-ink">{step.title}</h3>
               <p className="mt-3 text-sm leading-relaxed text-ink/75">{step.body}</p>
             </div>
-            <div className="min-w-0 sm:pt-1">{step.illustration}</div>
+            <div className="min-w-0 bg-paper sm:bg-transparent sm:pt-1">{step.illustration}</div>
           </li>
         ))}
       </ol>

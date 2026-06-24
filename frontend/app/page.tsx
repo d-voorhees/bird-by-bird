@@ -87,7 +87,7 @@ export default function HomePage() {
               the moment you sign in, leading to task overwhelm.
             </p>
             <p>
-              Bird by Bird is a layer that pulls one item out of the noise and gives it the whole screen
+              Bird by Bird is a focus tool that pulls one item out of the noise and gives it the whole screen
               until you are done with it. Helping you to focus on one thing at a time.
             </p>
           </div>
@@ -101,8 +101,7 @@ export default function HomePage() {
               Try it
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-ink/75">
-              Start with one bird. The application is free to use and does not require a credit
-              card.
+              Start with one bird. The application is free to use, no credit card required.
             </p>
             <LandingCTA className="mt-8" />
           </div>
