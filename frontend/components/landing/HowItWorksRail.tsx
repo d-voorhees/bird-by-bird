@@ -172,7 +172,7 @@ const STEPS: Step[] = [
   {
     number: "1",
     title: "Build your flock",
-    body: "Pull the most important things you need to work on now out of your bigger list and add them to the flock. ",
+    body: "Pick a handful of tasks from your main list and add them to your flock. Not everything. Just what you want to work on today.",
     illustration: <MockFlockView />,
   },
   {
@@ -184,7 +184,7 @@ const STEPS: Step[] = [
   {
     number: "3",
     title: "Finish and move on",
-    body: "Mark the bird done, and the next one appears. The history page keeps a record of what you finished (birds that have flown).",
+    body: "Mark the bird done, and the next one appears. The history page keeps a record of what you finished.",
     illustration: <MockHistoryView />,
   },
 ];
