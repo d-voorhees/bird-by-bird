@@ -193,14 +193,14 @@ export function HowItWorksRail() {
   return (
     <div className="relative">
       <div
-        className="absolute bottom-0 left-[11px] top-0 w-px bg-stone/30 sm:left-[15px]"
+        className="absolute bottom-0 left-[11px] top-0 z-0 w-px bg-stone/30 sm:left-[15px]"
         aria-hidden="true"
       />
       <ol className="space-y-16 sm:space-y-20">
         {STEPS.map((step) => (
           <li
             key={step.number}
-            className="relative grid gap-8 sm:grid-cols-[1fr_minmax(0,360px)] sm:gap-10"
+            className="relative z-10 grid gap-8 sm:grid-cols-[1fr_minmax(0,360px)] sm:gap-10"
           >
             <div className="relative pl-10 sm:pl-12">
               <span
