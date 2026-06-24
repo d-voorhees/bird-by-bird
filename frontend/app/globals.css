@@ -244,8 +244,14 @@ textarea.task-edit-field {
 }
 
 @media (max-width: 639px) {
+  .page-bird {
+    height: 100dvh;
+  }
+  .page-bird .bird-img {
+    width: 160px !important;
+  }
   .flock-row {
-    padding: 0 4px;
+    padding: 0 12px;
     min-height: 36px;
   }
   .flock-row__text {

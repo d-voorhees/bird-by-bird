@@ -54,7 +54,7 @@ function ZeroTasksGate({ children }: { children: React.ReactNode }) {
   if (tasksLoading || hasNoTasks) {
     return (
       <main className="page-bird flex h-screen flex-col bg-paper text-ink sm:min-h-screen sm:h-auto">
-        <header className="flex items-center justify-end px-6 py-5 text-sm">
+        <header className="flex items-center justify-end px-6 py-3 text-sm sm:py-5">
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <Link href="/flock" className="text-ink/50 transition hover:text-ink">
@@ -62,7 +62,7 @@ function ZeroTasksGate({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
         </header>
-        <section className="flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-8">
+        <section className="flex flex-1 flex-col items-center justify-center px-6 pb-2 pt-2 sm:pb-24 sm:pt-8">
           <p className="text-ink/40">Loading…</p>
         </section>
       </main>
@@ -201,7 +201,7 @@ function BirdScreen() {
 
   return (
     <main className="page-bird flex h-screen flex-col bg-paper text-ink sm:h-auto sm:min-h-screen">
-      <header className="flex items-center justify-end px-6 py-5 text-sm">
+      <header className="flex items-center justify-end px-6 py-3 text-sm sm:py-5">
         <div className="flex items-center gap-4">
           <ThemeToggle />
           <Link href="/flock" className="text-ink/50 transition hover:text-ink">
@@ -210,7 +210,7 @@ function BirdScreen() {
         </div>
       </header>
 
-      <section className="flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-8">
+      <section className="flex flex-1 flex-col items-center justify-center px-6 pb-2 pt-2 sm:pb-24 sm:pt-8">
         {loading && !data ? (
           <p className="text-ink/40">Loading…</p>
         ) : showSingleBirdPrompt && displayTask ? (
@@ -244,20 +244,20 @@ function BirdScreen() {
             <BirdImage
               filename={displayTask.birdImage}
               widthPx={300}
-              className="mx-auto mb-6"
+              className="mx-auto mb-2 sm:mb-6"
             />
             <EditableTaskContent task={displayTask} variant="hero" align="center" />
           </div>
         ) : (
           <div className="text-center">
-            <BirdImage filename="Artboard14.svg" widthPx={300} className="mx-auto mb-6" />
+            <BirdImage filename="Artboard14.svg" widthPx={300} className="mx-auto mb-2 sm:mb-6" />
             <p className="text-ink/40">No more birds</p>
           </div>
         )}
       </section>
 
       {!showSingleBirdPrompt ? (
-        <div className="flex justify-center px-6 pb-8">
+        <div className="flex justify-center px-6 pb-4 sm:pb-8">
           <div className="flex flex-wrap items-center justify-center gap-3">
             {displayTask ? (
               <>

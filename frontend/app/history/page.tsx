@@ -69,8 +69,9 @@ function HistoryScreen() {
             {groups.map((group, index) => (
               <section key={group.label}>
                 <div className="mb-3 flex items-center justify-between gap-4">
-                  <h2 className="font-display text-lg font-semibold text-ink">
-                    {group.label}
+                  <h2 className="font-display text-sm font-semibold text-ink sm:text-lg">
+                    <span className="sm:hidden">{group.label.replace(/,\s*\d{4}$/, "")}</span>
+                    <span className="hidden sm:inline">{group.label}</span>
                   </h2>
                   {index === 0 ? (
                     <div className={historyActionsRowClass}>
