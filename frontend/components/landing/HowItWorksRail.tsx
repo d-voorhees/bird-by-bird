@@ -84,12 +84,14 @@ function MockPendingRow({ title, bird }: MockTask) {
       <div className="flock-row">
         <MockCheckbox checked={false} />
         <BirdImage filename={bird} widthPx={100} />
-        <div className="flock-row__text flock-row__text--title-only min-w-0 flex-1">
-          <span className="text-sm text-ink">{title}</span>
-        </div>
-        <div className="flock-row__actions">
-          <MockDragHandle />
-          <MockTrashIcon />
+        <div className="flex min-w-0 flex-1 flex-col sm:flex-row sm:items-center">
+          <div className="flock-row__text flock-row__text--title-only">
+            <span className="text-sm text-ink">{title}</span>
+          </div>
+          <div className="flock-row__actions pb-1.5 sm:pb-0">
+            <MockDragHandle />
+            <MockTrashIcon />
+          </div>
         </div>
       </div>
     </div>
@@ -102,12 +104,14 @@ function MockCompletedRow({ title, bird, time }: MockTask & { time: string }) {
       <div className="flock-row">
         <MockCheckbox checked={true} />
         <BirdImage filename={bird} widthPx={100} />
-        <div className="flock-row__text min-w-0 flex-1">
-          <span className="text-sm font-medium text-ink/75 line-through decoration-ink/25">
-            {title}
-          </span>
+        <div className="flex min-w-0 flex-1 flex-col sm:flex-row sm:items-center">
+          <div className="flock-row__text">
+            <span className="text-sm font-medium text-ink/75 line-through decoration-ink/25">
+              {title}
+            </span>
+          </div>
+          <time className="pb-1.5 text-xs text-ink/40 sm:shrink-0 sm:pb-0">{time}</time>
         </div>
-        <time className="shrink-0 text-xs text-ink/40">{time}</time>
       </div>
     </div>
   );

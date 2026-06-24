@@ -22,22 +22,22 @@ export default function HomePage() {
         </div>
       </header>
 
-      <section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center px-6 pb-20 pt-12 text-center sm:pt-16">
+      <section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center px-6 pb-6 pt-4 text-center sm:pb-20 sm:pt-16">
         <Image
           src="/img/Artboard27.svg"
           alt=""
           width={300}
           height={300}
-          className="mb-8 h-auto w-[300px]"
+          className="mb-4 h-auto w-[180px] sm:mb-8 sm:w-[300px]"
           priority
         />
         <h1 className="font-display text-3xl leading-relaxed sm:text-4xl md:text-5xl">
           Just take it bird by bird.
         </h1>
-        <p className="mt-6 max-w-xl text-sm leading-relaxed text-ink/75 sm:text-base">
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink/75 sm:mt-6 sm:text-base">
           Bird by Bird is a focus tool. Most task managers show you all your tasks at once. Bird by Bird shows you them one at a time. Each task is a bird. Add what you want to work on today and work through it, bird by bird.
         </p>
-        <LandingCTA className="mt-10" />
+        <LandingCTA className="mt-5 sm:mt-10" />
       </section>
 
       <section

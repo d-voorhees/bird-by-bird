@@ -355,28 +355,29 @@ function AwaitingFlightRow({ task }: { task: Task }) {
 
         <BirdImage filename={task.birdImage} widthPx={100} />
 
-        <FlockRowText task={task}>
-          <EditableTaskContent
-            task={task}
-            variant="inline"
-            refetchQueries={taskEditRefetchQueries()}
-          />
-        </FlockRowText>
-
-        <div className="flock-row__actions">
-          <DragReorderButton
-            label={`Reorder ${task.title}`}
-            listeners={listeners}
-          />
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void runAction(() => deleteTask({ variables: { id: task.id } }))}
-            className="flock-action-btn text-ink/60 hover:text-red-700 dark:hover:text-red-400"
-            aria-label={`Delete ${task.title}`}
-          >
-            <TrashIcon />
-          </button>
+        <div className="flex min-w-0 flex-1 flex-col sm:flex-row sm:items-center">
+          <FlockRowText task={task}>
+            <EditableTaskContent
+              task={task}
+              variant="inline"
+              refetchQueries={taskEditRefetchQueries()}
+            />
+          </FlockRowText>
+          <div className="flock-row__actions pb-1.5 sm:pb-0">
+            <DragReorderButton
+              label={`Reorder ${task.title}`}
+              listeners={listeners}
+            />
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void runAction(() => deleteTask({ variables: { id: task.id } }))}
+              className="flock-action-btn text-ink/60 hover:text-red-700 dark:hover:text-red-400"
+              aria-label={`Delete ${task.title}`}
+            >
+              <TrashIcon />
+            </button>
+          </div>
         </div>
       </div>
     </div>

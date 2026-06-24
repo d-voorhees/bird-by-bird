@@ -74,22 +74,24 @@ export function CompletedTaskRow({
           onToggle={() => void handleUncheck()}
         />
         {showBird ? <BirdImage filename={task.birdImage} widthPx={100} /> : null}
-        <FlockRowText task={task}>
-          <EditableTaskContent
-            task={task}
-            variant="inline"
-            completed
-            refetchQueries={taskEditRefetchQueries(historyLimit)}
-          />
-        </FlockRowText>
-        {completedLabel ? (
-          <time
-            dateTime={task.completedAt ?? undefined}
-            className="shrink-0 text-xs text-ink/40"
-          >
-            {completedLabel}
-          </time>
-        ) : null}
+        <div className="flex min-w-0 flex-1 flex-col sm:flex-row sm:items-center">
+          <FlockRowText task={task}>
+            <EditableTaskContent
+              task={task}
+              variant="inline"
+              completed
+              refetchQueries={taskEditRefetchQueries(historyLimit)}
+            />
+          </FlockRowText>
+          {completedLabel ? (
+            <time
+              dateTime={task.completedAt ?? undefined}
+              className="pb-1.5 text-xs text-ink/40 sm:shrink-0 sm:pb-0"
+            >
+              {completedLabel}
+            </time>
+          ) : null}
+        </div>
       </div>
     </div>
   );
