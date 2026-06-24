@@ -53,7 +53,7 @@ function ZeroTasksGate({ children }: { children: React.ReactNode }) {
 
   if (tasksLoading || hasNoTasks) {
     return (
-      <main className="page-bird flex min-h-screen flex-col bg-paper text-ink">
+      <main className="page-bird flex h-screen flex-col bg-paper text-ink sm:min-h-screen sm:h-auto">
         <header className="flex items-center justify-end px-6 py-5 text-sm">
           <div className="flex items-center gap-4">
             <ThemeToggle />
@@ -200,7 +200,7 @@ function BirdScreen() {
   const busy = loading || completing || skipping || isTransitioning;
 
   return (
-    <main className="page-bird flex min-h-screen flex-col bg-paper text-ink">
+    <main className="page-bird flex h-screen flex-col bg-paper text-ink sm:h-auto sm:min-h-screen">
       <header className="flex items-center justify-end px-6 py-5 text-sm">
         <div className="flex items-center gap-4">
           <ThemeToggle />
