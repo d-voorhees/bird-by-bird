@@ -22,12 +22,12 @@ const FAQ_ITEMS: FaqItem[] = [
   {
     question: "Is the code open?",
     answer:
-      "The full source lives on GitHub, with a README that walks through the architecture and a CHANGELOG covering v1.0 and v1.1.",
+      "The full source lives on GitHub, with a README that walks through the architecture and a CHANGELOG that covers versioning.",
   },
   {
     question: "How do I get my data out?",
     answer:
-      "The history page has a Download dropdown for Markdown and CSV exports.",
+      "The history page has a Download option allowing you to export your completed tasks with dates and times. Markdown and CSV export formats available.",
   },
 ];
 

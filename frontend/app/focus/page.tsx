@@ -249,7 +249,10 @@ function BirdScreen() {
             <EditableTaskContent task={displayTask} variant="hero" align="center" />
           </div>
         ) : (
-          <p className="text-ink/40">No more birds</p>
+          <div className="text-center">
+            <BirdImage filename="Artboard14.svg" widthPx={300} className="mx-auto mb-6" />
+            <p className="text-ink/40">No more birds</p>
+          </div>
         )}
       </section>
 
@@ -278,14 +281,25 @@ function BirdScreen() {
                 </button>
               </>
             ) : null}
-            <button
-              type="button"
-              onClick={() => setAddOpen(true)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-stone/30 text-xl font-medium leading-none text-ink transition hover:border-ink/30"
-              aria-label="Add a new bird"
-            >
-              +
-            </button>
+            {displayTask ? (
+              <button
+                type="button"
+                onClick={() => setAddOpen(true)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-stone/30 text-xl font-medium leading-none text-ink transition hover:border-ink/30"
+                aria-label="Add a new bird"
+              >
+                +
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAddOpen(true)}
+                className="rounded-md bg-accent px-6 py-3 text-sm font-medium text-accent-fg transition hover:bg-accent/90"
+                aria-label="Add a new bird"
+              >
+                + add a new bird
+              </button>
+            )}
           </div>
         </div>
       ) : null}

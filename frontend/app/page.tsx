@@ -57,22 +57,6 @@ export default function HomePage() {
 
       <section
         className="border-t border-stone/20 px-6 py-16 sm:py-20"
-        aria-labelledby="what-not-heading"
-      >
-        <div className="mx-auto w-full max-w-2xl">
-          <h2 id="what-not-heading" className="font-display text-2xl sm:text-3xl">
-            What Bird by Bird is not
-          </h2>
-          <p className="mt-6 text-sm leading-relaxed text-ink/75 sm:text-base">
-            Bird by Bird is not a replacement for your task manager. The application does not send
-            notifications, track streaks, or let you assign tasks across people, projects, or
-            priorities. Instead it is a focus tool. Instead of being overwhelmed by a giant list of tasks, this displays one task to focus on at a time.
-          </p>
-        </div>
-      </section>
-
-      <section
-        className="border-t border-stone/20 px-6 py-16 sm:py-20"
         aria-labelledby="why-heading"
       >
         <div className="mx-auto w-full max-w-2xl">
@@ -91,6 +75,22 @@ export default function HomePage() {
               until you are done with it. Helping you to focus on one thing at a time.
             </p>
           </div>
+        </div>
+      </section>
+
+      <section
+        className="border-t border-stone/20 px-6 py-16 sm:py-20"
+        aria-labelledby="what-not-heading"
+      >
+        <div className="mx-auto w-full max-w-2xl">
+          <h2 id="what-not-heading" className="font-display text-2xl sm:text-3xl">
+            What Bird by Bird is not
+          </h2>
+          <p className="mt-6 text-sm leading-relaxed text-ink/75 sm:text-base">
+            Bird by Bird is not a replacement for your task manager. The application does not send
+            notifications, track streaks, or let you assign tasks across people, projects, or
+            priorities. Instead it is a focus tool. Instead of being overwhelmed by a giant list of tasks, this displays one task to focus on at a time.
+          </p>
         </div>
       </section>
 
