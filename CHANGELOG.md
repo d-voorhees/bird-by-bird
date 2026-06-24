@@ -8,7 +8,7 @@ Design decisions and improvements since the initial project scope.
 
 ### Internal signup notifications
 
-- After sending the verification email on new account creation, a second email now fires to `danielle@mediumandmessage.com` with the subject `New bird-by-bird signup: {user email}` and a one-liner HTML body with the signup timestamp (UTC).
+- After sending the verification email on new account creation, a second email now fires to `onboarding@mediumandmessage.com` with the subject `New bird-by-bird signup: {user email}` and a one-liner HTML body with the signup timestamp (UTC).
 - Verification email `from` address updated to `noreply@mediumandmessage.com`.
 
 ### Task transition speed
