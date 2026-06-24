@@ -14,7 +14,7 @@ export function LandingFooter() {
   return (
     <footer className="border-t border-stone/20 px-6 py-10">
       <div className="mx-auto w-full max-w-2xl text-center">
-        <p className="text-sm text-ink/60">A small project from <Link href="https://mediumandmessage.com/?utm_source=birdbybird&utm_medium=referral">Medium &amp; Message</Link>.</p>
+        <p className="text-sm text-ink/60">A project of <Link href="https://mediumandmessage.com/?utm_source=birdbybird&utm_medium=referral">Medium &amp; Message</Link>.</p>
         <nav
           className="mt-4 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs leading-none"
           aria-label="Footer"
