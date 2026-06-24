@@ -1,6 +1,6 @@
 # Bird by Bird
 
-A single-task focus tool. One active task at a time, a deliberate backlog (the flock), and a quiet history of what you finished. The constraint is the product.
+A single-task focus tool. One active task at a time, a deliberate backlog (the flock), and a history of what you finished.
 
 **Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.4
 
@@ -8,13 +8,13 @@ A single-task focus tool. One active task at a time, a deliberate backlog (the f
 
 ## Stack
 
-| Layer | Choice | Why |
-|-------|--------|-----|
-| Frontend | Next.js 15 + TypeScript + Tailwind | App Router, strong typing, fast UI iteration |
-| API | Django 5 + Graphene GraphQL | Explicit schema, mature ORM, revocable sessions |
-| Database | PostgreSQL | Composite constraints for queue positions |
-| Auth | JWT in HTTP-only cookies + sessions table | Revocable server-side sessions, no OAuth scope creep |
-| Package mgmt | pnpm (frontend), uv (backend) | Fast, reproducible installs |
+| Layer | Choice |
+|-------|--------|
+| Frontend | Next.js 15 + TypeScript + Tailwind |
+| API | Django 5 + Graphene GraphQL |
+| Database | PostgreSQL |
+| Auth | JWT in HTTP-only cookies + sessions table |
+| Package mgmt | pnpm (frontend), uv (backend) |
 
 ## Architecture
 
@@ -30,8 +30,6 @@ A single-task focus tool. One active task at a time, a deliberate backlog (the f
                                                │   (Fly.io)       │
                                                └──────────────────┘
 ```
-
-Monorepo layout:
 
 - `frontend/` — Next.js App Router, TypeScript, Tailwind, Apollo Client
 - `backend/` — Django 5, Graphene-Django, JWT auth, pytest
@@ -142,7 +140,7 @@ Backend environment variables (secret keys, database URL, SMTP credentials) are 
 
 ## Out of scope
 
-Tags, projects, due dates, reminders, sharing, analytics, streaks, search. The single-task constraint is intentional.
+No tags, projects, due dates, reminders, sharing, or streaks. Intentionally.
 
 ## License
 
