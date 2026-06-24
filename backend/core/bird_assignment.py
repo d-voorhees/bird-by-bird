@@ -6,8 +6,11 @@ from core.bird_images import BIRD_IMAGES
 from core.models import User
 
 
+_VALID_IMAGES = frozenset(BIRD_IMAGES)
+
+
 def pick_bird_image(user: User) -> str:
-    pool = list(user.bird_assignment_pool or [])
+    pool = [img for img in (user.bird_assignment_pool or []) if img in _VALID_IMAGES]
     if not pool:
         pool = random.sample(list(BIRD_IMAGES), len(BIRD_IMAGES))
 

@@ -214,7 +214,7 @@ function FlockScreen() {
 
           <section aria-labelledby="flown-heading">
             <h2 id="flown-heading" className="mb-4 font-display text-lg text-ink">
-              This bird has flown
+              {tasksFlownToday.length === 1 ? "This bird has flown" : "These birds have flown"}
             </h2>
             {historyLoading && !historyData ? (
               <p className="text-sm text-ink/40">Loading…</p>
