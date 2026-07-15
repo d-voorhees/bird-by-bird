@@ -28,7 +28,11 @@ export function ProtectedShell({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    return null;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-paper text-ink/60">
+        Loading…
+      </div>
+    );
   }
 
   if (!user.emailVerified) {

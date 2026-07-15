@@ -11,7 +11,7 @@ import {
 } from "react";
 
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { getApolloClient, REQUEST_TIMEOUT_MS } from "@/lib/apollo-client";
+import { getApolloClient, REQUEST_TIMEOUT_MS, SESSION_LOST_EVENT } from "@/lib/apollo-client";
 import { ME_QUERY, SIGN_OUT_MUTATION } from "@/lib/graphql/operations";
 import type { User } from "@/lib/types";
 
@@ -73,6 +73,17 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     void refreshUser();
   }, [client, refreshUser]);
+
+  useEffect(() => {
+    const handleSessionLost = () => {
+      setUser(null);
+      setLoading(false);
+      void client.clearStore().catch(() => undefined);
+    };
+
+    window.addEventListener(SESSION_LOST_EVENT, handleSessionLost);
+    return () => window.removeEventListener(SESSION_LOST_EVENT, handleSessionLost);
+  }, [client]);
 
   const signOut = useCallback(async () => {
     await client.mutate({ mutation: SIGN_OUT_MUTATION });

@@ -1,9 +1,12 @@
-import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from "@apollo/client";
+import { CombinedGraphQLErrors } from "@apollo/client/errors";
+import { onError } from "@apollo/client/link/error";
 
 const serverGraphqlUrl =
   process.env.NEXT_PUBLIC_GRAPHQL_URL ?? "http://127.0.0.1:8000/graphql/";
 
 const browserGraphqlUrl = "/graphql";
+const SESSION_LOST_EVENT = "bird:session-lost";
 
 const REQUEST_TIMEOUT_MS = 15000;
 
@@ -34,12 +37,24 @@ function fetchWithTimeout(
 }
 
 function makeClient(uri: string) {
+  const authErrorLink = onError(({ error }) => {
+    if (typeof window === "undefined") return;
+    const hasAuthError = CombinedGraphQLErrors.is(error)
+      ? error.errors.some((graphQLError) => graphQLError.message === "Authentication required")
+      : false;
+    if (hasAuthError) {
+      window.dispatchEvent(new CustomEvent(SESSION_LOST_EVENT));
+    }
+  });
+
+  const httpLink = new HttpLink({
+    uri,
+    credentials: "include",
+    fetch: fetchWithTimeout,
+  });
+
   return new ApolloClient({
-    link: new HttpLink({
-      uri,
-      credentials: "include",
-      fetch: fetchWithTimeout,
-    }),
+    link: ApolloLink.from([authErrorLink, httpLink]),
     cache: new InMemoryCache(),
     defaultOptions: {
       watchQuery: {
@@ -65,4 +80,4 @@ export function getApolloClient() {
   return browserClient;
 }
 
-export { browserGraphqlUrl, serverGraphqlUrl as graphqlUrl, REQUEST_TIMEOUT_MS };
+export { browserGraphqlUrl, serverGraphqlUrl as graphqlUrl, REQUEST_TIMEOUT_MS, SESSION_LOST_EVENT };
