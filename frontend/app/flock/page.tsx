@@ -3,17 +3,16 @@
 import { useMutation, useQuery } from "@apollo/client/react";
 import {
   DndContext,
-  KeyboardSensor,
   PointerSensor,
   closestCenter,
   type DragEndEvent,
+  useDroppable,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
 import {
   SortableContext,
   arrayMove,
-  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
@@ -41,8 +40,11 @@ import {
   CURRENT_BIRD_QUERY,
   DELETE_TASK_MUTATION,
   FLOCK_QUERY,
+  FLYING_LATER_QUERY,
   HISTORY_QUERY,
+  REORDER_FLYING_LATER_TASKS_MUTATION,
   REORDER_TASKS_MUTATION,
+  SET_TASK_STATUS_MUTATION,
 } from "@/lib/graphql/operations";
 import { markTaskDoneInCache } from "@/lib/taskCache";
 import { filterCompletedToday, isCompletedToday, type Task } from "@/lib/types";
@@ -57,12 +59,18 @@ export default function FlockPage() {
 
 function FlockScreen() {
   const [addOpen, setAddOpen] = useState(false);
+  const [showFlyingLater, setShowFlyingLater] = useState(true);
 
   const {
     data: flockData,
     loading: flockLoading,
     error: flockError,
   } = useQuery<{ flock: Task[] }>(FLOCK_QUERY);
+  const {
+    data: flyingLaterData,
+    loading: flyingLaterLoading,
+    error: flyingLaterError,
+  } = useQuery<{ flyingLater: Task[] }>(FLYING_LATER_QUERY);
   const {
     data: historyData,
     loading: historyLoading,
@@ -71,18 +79,36 @@ function FlockScreen() {
     variables: { limit: 50, offset: 0 },
   });
 
-  const flockFromServer = flockData?.flock ?? [];
-  const [orderedTasks, setOrderedTasks] = useState<Task[]>([]);
-  const pendingOrderRef = useRef<string | null>(null);
+  const flockFromServer = useMemo(() => flockData?.flock ?? [], [flockData?.flock]);
+  const flyingLaterFromServer = useMemo(
+    () => flyingLaterData?.flyingLater ?? [],
+    [flyingLaterData?.flyingLater],
+  );
+  const [awaitingTasks, setAwaitingTasks] = useState<Task[]>([]);
+  const [flyingLaterTasks, setFlyingLaterTasks] = useState<Task[]>([]);
+  const initializedToggleRef = useRef(false);
 
   useEffect(() => {
-    const serverIds = flockFromServer.map((task) => task.id).join(",");
-    if (pendingOrderRef.current === serverIds) {
-      pendingOrderRef.current = null;
-      return;
-    }
-    setOrderedTasks(flockFromServer);
+    setAwaitingTasks(flockFromServer);
   }, [flockFromServer]);
+
+  useEffect(() => {
+    setFlyingLaterTasks(flyingLaterFromServer);
+  }, [flyingLaterFromServer]);
+
+  useEffect(() => {
+    if (initializedToggleRef.current) return;
+    initializedToggleRef.current = true;
+    const saved = window.localStorage.getItem("flock-flying-later-visible");
+    if (saved !== null) {
+      setShowFlyingLater(saved === "true");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!initializedToggleRef.current) return;
+    window.localStorage.setItem("flock-flying-later-visible", String(showFlyingLater));
+  }, [showFlyingLater]);
 
   const flownTasks = useMemo(() => historyData?.history ?? [], [historyData?.history]);
   const tasksFlownToday = useMemo(
@@ -96,48 +122,145 @@ function FlockScreen() {
   const completedToday = tasksFlownToday.length;
 
   const [reorderTasks] = useMutation(REORDER_TASKS_MUTATION);
+  const [reorderFlyingLaterTasks] = useMutation(REORDER_FLYING_LATER_TASKS_MUTATION);
+  const [setTaskStatus] = useMutation(SET_TASK_STATUS_MUTATION);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 4 },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+
+  const AWAITING_CONTAINER = "awaiting-flight-list";
+  const FLYING_LATER_CONTAINER = "flying-later-list";
+
+  const getContainerId = useCallback(
+    (id: string) => {
+      if (id === AWAITING_CONTAINER || id === FLYING_LATER_CONTAINER) return id;
+      if (awaitingTasks.some((task) => task.id === id)) return AWAITING_CONTAINER;
+      if (flyingLaterTasks.some((task) => task.id === id)) return FLYING_LATER_CONTAINER;
+      return null;
+    },
+    [awaitingTasks, flyingLaterTasks],
   );
 
   const handleDragEnd = useCallback(
     async (event: DragEndEvent) => {
       const { active, over } = event;
-      if (!over || active.id === over.id) return;
+      if (!over) return;
 
-      const oldIndex = orderedTasks.findIndex((task) => task.id === String(active.id));
-      const newIndex = orderedTasks.findIndex((task) => task.id === String(over.id));
-      if (oldIndex < 0 || newIndex < 0) return;
+      const activeId = String(active.id);
+      const overId = String(over.id);
+      const sourceContainer = getContainerId(activeId);
+      const targetContainer = getContainerId(overId);
+      if (!sourceContainer || !targetContainer) return;
 
-      const reordered = arrayMove(orderedTasks, oldIndex, newIndex);
-      const orderedIds = reordered.map((task) => task.id);
-      pendingOrderRef.current = orderedIds.join(",");
-      setOrderedTasks(reordered);
+      const sourceList =
+        sourceContainer === AWAITING_CONTAINER ? awaitingTasks : flyingLaterTasks;
+      const targetList =
+        targetContainer === AWAITING_CONTAINER ? awaitingTasks : flyingLaterTasks;
+
+      const sourceIndex = sourceList.findIndex((task) => task.id === activeId);
+      if (sourceIndex < 0) return;
+
+      if (sourceContainer === targetContainer) {
+        const oldIndex = sourceIndex;
+        const newIndex =
+          overId === targetContainer ? sourceList.length - 1 : sourceList.findIndex((t) => t.id === overId);
+        if (newIndex < 0 || oldIndex === newIndex) return;
+
+        const reordered = arrayMove(sourceList, oldIndex, newIndex);
+        const orderedIds = reordered.map((task) => task.id);
+
+        if (sourceContainer === AWAITING_CONTAINER) {
+          setAwaitingTasks(reordered);
+        } else {
+          setFlyingLaterTasks(reordered);
+        }
+
+        try {
+          if (sourceContainer === AWAITING_CONTAINER) {
+            await reorderTasks({
+              variables: { orderedIds },
+              update(cache) {
+                cache.writeQuery({ query: FLOCK_QUERY, data: { flock: reordered } });
+                cache.writeQuery({
+                  query: CURRENT_BIRD_QUERY,
+                  data: { currentBird: reordered[0] ?? null },
+                });
+              },
+            });
+          } else {
+            await reorderFlyingLaterTasks({
+              variables: { orderedIds },
+              update(cache) {
+                cache.writeQuery({ query: FLYING_LATER_QUERY, data: { flyingLater: reordered } });
+              },
+            });
+          }
+        } catch (error) {
+          setAwaitingTasks(flockFromServer);
+          setFlyingLaterTasks(flyingLaterFromServer);
+          notify(error instanceof Error ? error.message : "Could not reorder tasks");
+        }
+        return;
+      }
+
+      const movedTask = sourceList[sourceIndex];
+      const destinationIndex =
+        overId === targetContainer ? targetList.length : targetList.findIndex((task) => task.id === overId);
+      const insertIndex = destinationIndex < 0 ? targetList.length : destinationIndex;
+
+      const nextSource = sourceList.filter((task) => task.id !== movedTask.id);
+      const nextTarget = [...targetList];
+      nextTarget.splice(insertIndex, 0, {
+        ...movedTask,
+        status: targetContainer === AWAITING_CONTAINER ? "ACTIVE" : "FLYING_LATER",
+      });
+
+      const nextAwaiting =
+        sourceContainer === AWAITING_CONTAINER
+          ? nextSource
+          : targetContainer === AWAITING_CONTAINER
+            ? nextTarget
+            : awaitingTasks;
+      const nextFlyingLater =
+        sourceContainer === FLYING_LATER_CONTAINER
+          ? nextSource
+          : targetContainer === FLYING_LATER_CONTAINER
+            ? nextTarget
+            : flyingLaterTasks;
+
+      setAwaitingTasks(nextAwaiting);
+      setFlyingLaterTasks(nextFlyingLater);
 
       try {
-        await reorderTasks({
-          variables: { orderedIds },
+        await setTaskStatus({
+          variables: {
+            id: movedTask.id,
+            status: targetContainer === AWAITING_CONTAINER ? "ACTIVE" : "FLYING_LATER",
+          },
           update(cache) {
-            cache.writeQuery({ query: FLOCK_QUERY, data: { flock: reordered } });
+            cache.writeQuery({ query: FLOCK_QUERY, data: { flock: nextAwaiting } });
+            cache.writeQuery({ query: FLYING_LATER_QUERY, data: { flyingLater: nextFlyingLater } });
             cache.writeQuery({
               query: CURRENT_BIRD_QUERY,
-              data: { currentBird: reordered[0] ?? null },
+              data: { currentBird: nextAwaiting[0] ?? null },
             });
           },
         });
       } catch (error) {
-        pendingOrderRef.current = null;
-        setOrderedTasks(flockFromServer);
-        notify(error instanceof Error ? error.message : "Could not reorder tasks");
+        setAwaitingTasks(flockFromServer);
+        setFlyingLaterTasks(flyingLaterFromServer);
+        notify(error instanceof Error ? error.message : "Could not move task");
       }
     },
-    [orderedTasks, flockFromServer, reorderTasks],
+    [
+      awaitingTasks,
+      flyingLaterTasks,
+      flockFromServer,
+      flyingLaterFromServer,
+      getContainerId,
+      reorderFlyingLaterTasks,
+      reorderTasks,
+      setTaskStatus,
+    ],
   );
 
   return (
@@ -162,7 +285,12 @@ function FlockScreen() {
       <section className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">
         <h1 className="mb-8 font-display text-2xl">Flock</h1>
 
-        <div className="space-y-12">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={(event) => void handleDragEnd(event)}
+        >
+          <div className="space-y-12">
           <section aria-labelledby="awaiting-flight-heading">
             <h2
               id="awaiting-flight-heading"
@@ -174,9 +302,17 @@ function FlockScreen() {
               <p className="text-sm text-ink/40">Loading…</p>
             ) : flockError ? (
               <p className="text-sm text-red-800">Could not load awaiting tasks.</p>
-            ) : orderedTasks.length === 0 ? (
+            ) : awaitingTasks.length === 0 ? (
               <FlockListFooter
-                list={<p className="text-sm text-ink/40">No birds waiting.</p>}
+                list={
+                  <div className="flock-list">
+                    <TaskListDropZone id={AWAITING_CONTAINER}>
+                      <p className="rounded-lg border border-dashed border-stone/25 px-3 py-3 text-sm text-ink/40">
+                        No birds waiting.
+                      </p>
+                    </TaskListDropZone>
+                  </div>
+                }
                 action={
                   <FlockSecondaryButton onClick={() => setAddOpen(true)}>
                     add another
@@ -187,20 +323,16 @@ function FlockScreen() {
               <FlockListFooter
                 list={
                   <div className="flock-list space-y-2">
-                    <DndContext
-                      sensors={sensors}
-                      collisionDetection={closestCenter}
-                      onDragEnd={(event) => void handleDragEnd(event)}
-                    >
+                    <TaskListDropZone id={AWAITING_CONTAINER}>
                       <SortableContext
-                        items={orderedTasks.map((task) => task.id)}
+                        items={awaitingTasks.map((task) => task.id)}
                         strategy={verticalListSortingStrategy}
                       >
-                        {orderedTasks.map((task) => (
-                          <AwaitingFlightRow key={task.id} task={task} />
+                        {awaitingTasks.map((task) => (
+                          <TaskRow key={task.id} task={task} />
                         ))}
                       </SortableContext>
-                    </DndContext>
+                    </TaskListDropZone>
                   </div>
                 }
                 action={
@@ -209,6 +341,48 @@ function FlockScreen() {
                   </FlockSecondaryButton>
                 }
               />
+            )}
+          </section>
+
+          <section aria-labelledby="flying-later-heading">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 id="flying-later-heading" className="font-display text-lg text-ink">
+                Flying later ({flyingLaterTasks.length})
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowFlyingLater((current) => !current)}
+                className="text-xs text-ink/55 underline-offset-2 hover:text-ink hover:underline"
+              >
+                {showFlyingLater ? "hide" : "show"}
+              </button>
+            </div>
+
+            {!showFlyingLater ? null : flyingLaterLoading && !flyingLaterData ? (
+              <p className="text-sm text-ink/40">Loading…</p>
+            ) : flyingLaterError ? (
+              <p className="text-sm text-red-800">Could not load flying later tasks.</p>
+            ) : flyingLaterTasks.length === 0 ? (
+              <div className="flock-list">
+                <TaskListDropZone id={FLYING_LATER_CONTAINER}>
+                  <p className="rounded-lg border border-dashed border-stone/25 px-3 py-3 text-sm text-ink/40">
+                    No birds in holding.
+                  </p>
+                </TaskListDropZone>
+              </div>
+            ) : (
+              <div className="flock-list space-y-2">
+                <TaskListDropZone id={FLYING_LATER_CONTAINER}>
+                  <SortableContext
+                    items={flyingLaterTasks.map((task) => task.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {flyingLaterTasks.map((task) => (
+                      <TaskRow key={task.id} task={task} showFlyingLaterLabel />
+                    ))}
+                  </SortableContext>
+                </TaskListDropZone>
+              </div>
             )}
           </section>
 
@@ -248,7 +422,8 @@ function FlockScreen() {
               />
             )}
           </section>
-        </div>
+          </div>
+        </DndContext>
       </section>
 
       <CreditsLink />
@@ -272,9 +447,25 @@ function TrashIcon() {
   );
 }
 
-function AwaitingFlightRow({ task }: { task: Task }) {
+function TaskListDropZone({ id, children }: { id: string; children: React.ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <div ref={setNodeRef} className={isOver ? "rounded-lg ring-1 ring-accent/40" : undefined}>
+      {children}
+    </div>
+  );
+}
+
+function TaskRow({
+  task,
+  showFlyingLaterLabel = false,
+}: {
+  task: Task;
+  showFlyingLaterLabel?: boolean;
+}) {
   const refetch = [
     { query: FLOCK_QUERY },
+    { query: FLYING_LATER_QUERY },
     { query: CURRENT_BIRD_QUERY },
     { query: HISTORY_QUERY, variables: { limit: 50, offset: 0 } },
   ];
@@ -357,6 +548,9 @@ function AwaitingFlightRow({ task }: { task: Task }) {
 
         <div className="flex min-w-0 flex-1 flex-col sm:flex-row sm:items-center">
           <FlockRowText task={task}>
+            {showFlyingLaterLabel ? (
+              <p className="mb-1 text-[10px] uppercase tracking-wide text-ink/45">flying later</p>
+            ) : null}
             <EditableTaskContent
               task={task}
               variant="inline"

@@ -18,6 +18,10 @@ def _active_tasks(user: User):
     return Task.objects.filter(user=user, status=TaskStatus.ACTIVE).order_by("position")
 
 
+def _tasks_for_status(user: User, status: TaskStatus):
+    return Task.objects.filter(user=user, status=status).order_by("position")
+
+
 def _normalize_positions(user: User, ordered_tasks: list[Task]) -> list[Task]:
     for index, task in enumerate(ordered_tasks):
         task.position = index + 10_000
@@ -30,6 +34,12 @@ def _normalize_positions(user: User, ordered_tasks: list[Task]) -> list[Task]:
 
 def _next_position(user: User) -> int:
     result = _active_tasks(user).aggregate(max_pos=Max("position"))
+    max_pos = result["max_pos"]
+    return 0 if max_pos is None else max_pos + 1
+
+
+def _next_position_for_status(user: User, status: TaskStatus) -> int:
+    result = _tasks_for_status(user, status).aggregate(max_pos=Max("position"))
     max_pos = result["max_pos"]
     return 0 if max_pos is None else max_pos + 1
 
@@ -122,10 +132,10 @@ def update_task(
 @transaction.atomic
 def delete_task(user: User, task_id: UUID | str) -> bool:
     task = Task.objects.select_for_update().get(id=task_id, user=user)
-    was_active = task.status == TaskStatus.ACTIVE
+    status = task.status
     task.delete()
-    if was_active:
-        remaining = list(_active_tasks(user).select_for_update())
+    if status in {TaskStatus.ACTIVE, TaskStatus.FLYING_LATER}:
+        remaining = list(_tasks_for_status(user, status).select_for_update())
         if remaining:
             _normalize_positions(user, remaining)
     return True
@@ -172,6 +182,40 @@ def reorder_tasks(user: User, ordered_ids: list[UUID]) -> list[Task]:
     id_to_task = {task.id: task for task in active}
     ordered = [id_to_task[task_id] for task_id in ordered_ids]
     return _normalize_positions(user, ordered)
+
+
+@transaction.atomic
+def reorder_flying_later_tasks(user: User, ordered_ids: list[UUID]) -> list[Task]:
+    flying_later = list(_tasks_for_status(user, TaskStatus.FLYING_LATER).select_for_update())
+    flying_later_ids = {task.id for task in flying_later}
+
+    if set(ordered_ids) != flying_later_ids or len(ordered_ids) != len(flying_later):
+        raise ValueError("orderedIds must contain all flying-later task IDs exactly once")
+
+    id_to_task = {task.id: task for task in flying_later}
+    ordered = [id_to_task[task_id] for task_id in ordered_ids]
+    return _normalize_positions(user, ordered)
+
+
+@transaction.atomic
+def set_task_status(user: User, task_id: UUID | str, status: TaskStatus) -> Task:
+    task = Task.objects.select_for_update().get(id=task_id, user=user)
+    if task.status == status:
+        return task
+
+    allowed_statuses = {TaskStatus.ACTIVE, TaskStatus.FLYING_LATER}
+    if task.status not in allowed_statuses or status not in allowed_statuses:
+        raise ValueError("Task status can only be moved between active and flying later")
+
+    source_status = task.status
+    task.status = status
+    task.position = _next_position_for_status(user, status)
+    task.save(update_fields=["status", "position"])
+
+    source_tasks = list(_tasks_for_status(user, source_status).select_for_update())
+    if source_tasks:
+        _normalize_positions(user, source_tasks)
+    return task
 
 
 @transaction.atomic

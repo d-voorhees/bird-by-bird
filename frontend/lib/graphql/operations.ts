@@ -39,6 +39,20 @@ export const FLOCK_QUERY = gql`
   }
 `;
 
+export const FLYING_LATER_QUERY = gql`
+  query FlyingLater {
+    flyingLater {
+      id
+      title
+      notes
+      status
+      position
+      birdImage
+      createdAt
+    }
+  }
+`;
+
 export const HISTORY_QUERY = gql`
   query History($limit: Int!, $offset: Int!) {
     history(limit: $limit, offset: $offset) {
@@ -148,6 +162,27 @@ export const REORDER_TASKS_MUTATION = gql`
     reorderTasks(orderedIds: $orderedIds) {
       id
       title
+      position
+    }
+  }
+`;
+
+export const REORDER_FLYING_LATER_TASKS_MUTATION = gql`
+  mutation ReorderFlyingLaterTasks($orderedIds: [ID!]!) {
+    reorderFlyingLaterTasks(orderedIds: $orderedIds) {
+      id
+      title
+      position
+      status
+    }
+  }
+`;
+
+export const SET_TASK_STATUS_MUTATION = gql`
+  mutation SetTaskStatus($id: ID!, $status: TaskStatusEnum!) {
+    setTaskStatus(id: $id, status: $status) {
+      id
+      status
       position
     }
   }

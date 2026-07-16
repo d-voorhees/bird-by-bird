@@ -28,6 +28,7 @@ class User(models.Model):
 
 class TaskStatus(models.TextChoices):
     ACTIVE = "active", "Active"
+    FLYING_LATER = "flying_later", "Flying Later"
     DONE = "done", "Done"
     ABANDONED = "abandoned", "Abandoned"
 

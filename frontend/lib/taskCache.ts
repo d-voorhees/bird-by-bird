@@ -3,11 +3,13 @@ import type { ApolloCache } from "@apollo/client";
 import {
   CURRENT_BIRD_QUERY,
   FLOCK_QUERY,
+  FLYING_LATER_QUERY,
   HISTORY_QUERY,
 } from "@/lib/graphql/operations";
 import type { Task } from "@/lib/types";
 
 type FlockData = { flock: Task[] };
+type FlyingLaterData = { flyingLater: Task[] };
 type CurrentBirdData = { currentBird: Task | null };
 type HistoryData = { history: Task[] };
 
@@ -15,6 +17,13 @@ function removeFromFlock(cache: ApolloCache, taskId: string) {
   cache.updateQuery<FlockData>({ query: FLOCK_QUERY }, (data) => {
     if (!data) return data;
     return { flock: data.flock.filter((task) => task.id !== taskId) };
+  });
+}
+
+function removeFromFlyingLater(cache: ApolloCache, taskId: string) {
+  cache.updateQuery<FlyingLaterData>({ query: FLYING_LATER_QUERY }, (data) => {
+    if (!data) return data;
+    return { flyingLater: data.flyingLater.filter((task) => task.id !== taskId) };
   });
 }
 
@@ -59,6 +68,7 @@ export function markTaskDoneInCache(
     completedAt,
   };
   removeFromFlock(cache, task.id);
+  removeFromFlyingLater(cache, task.id);
   setCurrentBirdFromFlockIfMatching(cache, task.id);
   for (const limit of historyLimits) {
     prependToHistory(cache, completedTask, limit);

@@ -2,7 +2,7 @@ export type Task = {
   id: string;
   title: string;
   notes?: string | null;
-  status: "ACTIVE" | "DONE" | "ABANDONED";
+  status: "ACTIVE" | "FLYING_LATER" | "DONE" | "ABANDONED";
   position: number;
   birdImage?: string | null;
   createdAt: string;

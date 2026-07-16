@@ -358,6 +358,86 @@ class TestTasks:
         titles = [task["title"] for task in response["data"]["reorderTasks"]]
         assert titles == ["C", "A", "B"]
 
+    def test_move_task_between_awaiting_and_flying_later(self, client: Client, user: User) -> None:
+        auth_client(client, user)
+        task_id = graphql(client, 'mutation { addTask(title: "Later me") { id } }')["data"]["addTask"]["id"]
+
+        moved = graphql(
+            client,
+            """
+            mutation Move($id: ID!) {
+              setTaskStatus(id: $id, status: FLYING_LATER) {
+                id
+                status
+              }
+            }
+            """,
+            {"id": task_id},
+        )
+        assert moved["data"]["setTaskStatus"]["status"] == "FLYING_LATER"
+
+        flock = graphql(client, "query { flock { id } }")
+        assert flock["data"]["flock"] == []
+        current = graphql(client, "query { currentBird { id } }")
+        assert current["data"]["currentBird"] is None
+        flying_later = graphql(client, "query { flyingLater { id status } }")
+        assert flying_later["data"]["flyingLater"][0]["id"] == task_id
+        assert flying_later["data"]["flyingLater"][0]["status"] == "FLYING_LATER"
+
+        restored = graphql(
+            client,
+            """
+            mutation Move($id: ID!) {
+              setTaskStatus(id: $id, status: ACTIVE) {
+                id
+                status
+              }
+            }
+            """,
+            {"id": task_id},
+        )
+        assert restored["data"]["setTaskStatus"]["status"] == "ACTIVE"
+        flock_after = graphql(client, "query { flock { id status } }")
+        assert flock_after["data"]["flock"][0]["id"] == task_id
+        assert flock_after["data"]["flock"][0]["status"] == "ACTIVE"
+
+    def test_reorder_flying_later_tasks(self, client: Client, user: User) -> None:
+        auth_client(client, user)
+        a = graphql(client, 'mutation { addTask(title: "A") { id } }')["data"]["addTask"]["id"]
+        b = graphql(client, 'mutation { addTask(title: "B") { id } }')["data"]["addTask"]["id"]
+        c = graphql(client, 'mutation { addTask(title: "C") { id } }')["data"]["addTask"]["id"]
+
+        for task_id in [a, b, c]:
+            graphql(
+                client,
+                """
+                mutation Move($id: ID!) {
+                  setTaskStatus(id: $id, status: FLYING_LATER) {
+                    id
+                  }
+                }
+                """,
+                {"id": task_id},
+            )
+
+        response = graphql(
+            client,
+            """
+            mutation Reorder($ids: [ID!]!) {
+              reorderFlyingLaterTasks(orderedIds: $ids) {
+                title
+                status
+              }
+            }
+            """,
+            {"ids": [c, a, b]},
+        )
+        assert "errors" not in response
+        titles = [task["title"] for task in response["data"]["reorderFlyingLaterTasks"]]
+        statuses = {task["status"] for task in response["data"]["reorderFlyingLaterTasks"]}
+        assert titles == ["C", "A", "B"]
+        assert statuses == {"FLYING_LATER"}
+
     def test_history_pagination(self, client: Client, user: User) -> None:
         auth_client(client, user)
         task_id = graphql(client, 'mutation { addTask(title: "Done task") { id } }')["data"]["addTask"]["id"]

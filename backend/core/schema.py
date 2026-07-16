@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 class TaskStatusEnum(graphene.Enum):
     ACTIVE = "active"
+    FLYING_LATER = "flying_later"
     DONE = "done"
     ABANDONED = "abandoned"
 
@@ -301,6 +302,41 @@ class ReorderTasks(graphene.Mutation):
             raise GraphQLError(str(exc)) from exc
 
 
+class ReorderFlyingLaterTasks(graphene.Mutation):
+    class Arguments:
+        ordered_ids = graphene.List(graphene.NonNull(graphene.ID), required=True)
+
+    Output = graphene.List(graphene.NonNull(TaskType))
+
+    def mutate(self, info: graphene.ResolveInfo, ordered_ids: list[str]) -> list[Task]:
+        user = _require_verified_user(info)
+        try:
+            from uuid import UUID
+
+            return task_service.reorder_flying_later_tasks(
+                user, [UUID(task_id) for task_id in ordered_ids]
+            )
+        except ValueError as exc:
+            raise GraphQLError(str(exc)) from exc
+
+
+class SetTaskStatus(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+        status = TaskStatusEnum(required=True)
+
+    Output = TaskType
+
+    def mutate(self, info: graphene.ResolveInfo, id: str, status: TaskStatusEnum) -> Task:
+        user = _require_verified_user(info)
+        try:
+            return task_service.set_task_status(user, id, TaskStatus(status.value))
+        except Task.DoesNotExist:
+            raise GraphQLError("Task not found") from None
+        except ValueError as exc:
+            raise GraphQLError(str(exc)) from exc
+
+
 class PromoteTask(graphene.Mutation):
     class Arguments:
         id = graphene.ID(required=True)
@@ -417,6 +453,7 @@ class Query(graphene.ObjectType):
     me = graphene.Field(UserType)
     current_bird = graphene.Field(TaskType)
     flock = graphene.List(graphene.NonNull(TaskType), required=True)
+    flying_later = graphene.List(graphene.NonNull(TaskType), required=True)
     history = graphene.List(
         graphene.NonNull(TaskType),
         required=True,
@@ -440,6 +477,10 @@ class Query(graphene.ObjectType):
     def resolve_flock(self, info: graphene.ResolveInfo):
         user = _require_verified_user(info)
         return Task.objects.filter(user=user, status=TaskStatus.ACTIVE).order_by("position")
+
+    def resolve_flying_later(self, info: graphene.ResolveInfo):
+        user = _require_verified_user(info)
+        return Task.objects.filter(user=user, status=TaskStatus.FLYING_LATER).order_by("position")
 
     def resolve_history(
         self,
@@ -466,6 +507,8 @@ class Mutation(graphene.ObjectType):
     delete_task = DeleteTask.Field()
     update_task = UpdateTask.Field()
     reorder_tasks = ReorderTasks.Field()
+    reorder_flying_later_tasks = ReorderFlyingLaterTasks.Field()
+    set_task_status = SetTaskStatus.Field()
     promote_task = PromoteTask.Field()
     uncomplete_task = UncompleteTask.Field()
     clear_history = ClearHistory.Field()

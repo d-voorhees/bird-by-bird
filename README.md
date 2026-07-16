@@ -2,7 +2,7 @@
 
 A single-task focus tool. One active task at a time, a deliberate backlog (the flock), and a history of what you finished.
 
-**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.4
+**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.5
 
 ---
 
@@ -99,7 +99,7 @@ pnpm exec tsc --noEmit
 
 ## GraphQL schema
 
-**Queries:** `me`, `currentBird`, `flock`, `history(limit, offset)`
+**Queries:** `me`, `currentBird`, `flock`, `flyingLater`, `history(limit, offset)`
 
 **Mutations:**
 
@@ -108,7 +108,14 @@ pnpm exec tsc --noEmit
 | Auth | `signUp`, `signIn`, `signOut` |
 | Email | `verifyEmail`, `resendVerificationEmail` |
 | Password | `requestPasswordReset`, `resetPassword` |
-| Tasks | `addTask`, `completeTask`, `uncompleteTask`, `skipTask`, `abandonTask`, `deleteTask`, `updateTask`, `reorderTasks`, `promoteTask`, `clearHistory` |
+| Tasks | `addTask`, `completeTask`, `uncompleteTask`, `skipTask`, `abandonTask`, `deleteTask`, `updateTask`, `reorderTasks`, `reorderFlyingLaterTasks`, `setTaskStatus`, `promoteTask`, `clearHistory` |
+
+## What's new in v1.5
+
+- Added a new persisted task status, `flying_later`, shown as a dedicated section between **Awaiting flight** and **This bird has flown** on the flock page.
+- Tasks can now be dragged between **Awaiting flight** and **Flying later**, with manual ordering preserved inside each list.
+- Added a hide/show toggle for the **Flying later** section on flock, with the preference remembered locally.
+- `flyingLater` tasks are excluded from focus and non-flying-later counts until moved back to `awaiting flight`.
 
 Three core tables: `users`, `tasks`, `sessions`. Active task positions are unique per user via a partial unique index. Bird image assignment cycles through all 28 illustrations before repeating.
 
