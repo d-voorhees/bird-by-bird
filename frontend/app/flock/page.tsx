@@ -5,7 +5,6 @@ import {
   DndContext,
   PointerSensor,
   closestCenter,
-  type DragCancelEvent,
   type DragOverEvent,
   type DragStartEvent,
   type DragEndEvent,
@@ -223,9 +222,6 @@ function FlockScreen() {
 
       const sourceList =
         sourceContainer === AWAITING_CONTAINER ? awaitingTasks : flyingLaterTasks;
-      const targetList =
-        targetContainer === AWAITING_CONTAINER ? awaitingTasks : flyingLaterTasks;
-
       const sourceIndex = sourceList.findIndex((task) => task.id === activeId);
       if (sourceIndex < 0) return;
 
@@ -375,7 +371,7 @@ function FlockScreen() {
   );
 
   const handleDragCancel = useCallback(
-    (_event: DragCancelEvent) => {
+    () => {
       dragStartContainerRef.current = null;
       setAwaitingTasks(flockFromServer);
       setFlyingLaterTasks(flyingLaterFromServer);
