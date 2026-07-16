@@ -117,6 +117,32 @@ pnpm exec tsc --noEmit
 - Added a hide/show toggle for the **Flying later** section on flock, with the preference remembered locally.
 - `flyingLater` tasks are excluded from focus and non-flying-later counts until moved back to `awaiting flight`.
 
+## Summary since last commit
+
+- Added smooth cross-list drag behavior between **Awaiting flight** and **Flying later** (live move on drag-over, no duplicate rows on cross-list drags, and persisted final order/status on drop).
+- Completing a task from **Flying later** now works server-side and moves the task into **This bird has flown**.
+- **Flying later** now supports:
+  - `hide tasks` under the list when expanded
+  - `show tasks` when collapsed
+  - collapsed section remains a valid drop target; dropping into it opens the section
+  - no toggle shown when there are zero flying-later tasks
+- Added completed-list visibility controls with the same conditional behavior:
+  - `hide completed` / `show completed`
+  - toggle shown only when there are completed tasks in the section
+- Updated copy on empty awaiting state action:
+  - empty **Awaiting flight**: `add new task`
+  - non-empty **Awaiting flight**: `add another`
+- Updated landing-page messaging in **How it works**:
+  - added a dedicated Step 3 for shifting priorities with a `later list`
+  - moved **Finish and move on** to Step 4 and updated copy to mention an exportable history record
+- Updated landing-page mock UI and responsive behavior:
+  - added a mock **Flying later** card in the rail
+  - matched label styling (including `Today`) across mock sections
+  - kept mobile-style row behavior up to `1280px`, then restored desktop behavior above that
+  - adjusted section widths to `xl:w-1/2` while preserving existing behavior below `1280px`
+- Updated landing example copy:
+  - changed `Write the agenda so meeting has a point` to `write meeting agenda`
+
 Three core tables: `users`, `tasks`, `sessions`. Active task positions are unique per user via a partial unique index. Bird image assignment cycles through all 28 illustrations before repeating.
 
 ## Deployment

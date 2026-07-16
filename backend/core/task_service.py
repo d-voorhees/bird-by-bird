@@ -74,15 +74,17 @@ def add_task(user: User, title: str, notes: str | None, do_next: bool = False) -
 @transaction.atomic
 def complete_task(user: User, task_id: UUID | str) -> Task:
     task = Task.objects.select_for_update().get(id=task_id, user=user)
-    if task.status != TaskStatus.ACTIVE:
-        raise ValueError("Task is not active")
+    if task.status not in {TaskStatus.ACTIVE, TaskStatus.FLYING_LATER}:
+        raise ValueError("Task is not active or flying later")
 
+    source_status = task.status
     task.status = TaskStatus.DONE
     task.completed_at = _utcnow()
     task.save(update_fields=["status", "completed_at"])
 
-    remaining = [t for t in _active_tasks(user).select_for_update()]
-    _normalize_positions(user, remaining)
+    remaining = [t for t in _tasks_for_status(user, source_status).select_for_update()]
+    if remaining:
+        _normalize_positions(user, remaining)
     return task
 
 

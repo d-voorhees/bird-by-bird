@@ -22,7 +22,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      <section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center px-6 pb-6 pt-4 text-center sm:pb-20 sm:pt-16">
+      <section className="mx-auto flex w-full flex-1 flex-col items-center px-6 pb-6 pt-4 text-center md:w-2/3 xl:w-1/2 sm:pb-20 sm:pt-16">
         <Image
           src="/img/Artboard27.svg"
           alt=""
@@ -45,10 +45,14 @@ export default function HomePage() {
         className="border-t border-stone/20 bg-paper px-6 py-16 sm:py-20"
         aria-labelledby="how-it-works-heading"
       >
-        <div className="mx-auto w-full max-w-2xl">
+        <div className="mx-auto w-full md:w-2/3 xl:w-1/2">
           <h2 id="how-it-works-heading" className="font-display text-2xl sm:text-3xl">
             How it works
           </h2>
+          <p className="mt-4 text-sm leading-relaxed text-ink/75 sm:text-base">
+            And because priorities change throughout the day, you can move tasks into Flying later
+            without losing your focus queue.
+          </p>
           <div className="mt-12">
             <HowItWorksRail />
           </div>
@@ -59,7 +63,7 @@ export default function HomePage() {
         className="border-t border-stone/20 px-6 py-16 sm:py-20"
         aria-labelledby="why-heading"
       >
-        <div className="mx-auto w-full max-w-2xl">
+        <div className="mx-auto w-full md:w-2/3 xl:w-1/2">
           <h2 id="why-heading" className="font-display text-2xl sm:text-3xl">
             Why
           </h2>
@@ -72,7 +76,8 @@ export default function HomePage() {
             </p>
             <p>
               Bird by Bird is a focus tool that pulls one item out of the noise and gives it the whole screen
-              until you are done with it. Helping you to focus on one thing at a time.
+              until you are done with it. Helping you to focus on one thing at a time, while still giving you
+              a Flying later holding list for tasks you need to pause when priorities shift.
             </p>
           </div>
         </div>
@@ -82,7 +87,7 @@ export default function HomePage() {
         className="border-t border-stone/20 px-6 py-16 sm:py-20"
         aria-labelledby="what-not-heading"
       >
-        <div className="mx-auto w-full max-w-2xl">
+        <div className="mx-auto w-full md:w-2/3 xl:w-1/2">
           <h2 id="what-not-heading" className="font-display text-2xl sm:text-3xl">
             What Bird by Bird is not
           </h2>
@@ -95,7 +100,7 @@ export default function HomePage() {
       </section>
 
       <section className="border-t border-stone/20 px-6 py-16 sm:py-20" aria-labelledby="try-heading">
-        <div className="mx-auto w-full max-w-2xl">
+        <div className="mx-auto w-full md:w-2/3 xl:w-1/2">
           <div className="rounded-lg border border-stone/20 bg-surface/40 px-6 py-10 text-center sm:px-10 sm:py-12">
             <h2 id="try-heading" className="font-display text-2xl sm:text-3xl">
               Try it
@@ -112,7 +117,7 @@ export default function HomePage() {
         className="border-t border-stone/20 px-6 py-16 sm:py-20"
         aria-labelledby="faq-heading"
       >
-        <div className="mx-auto w-full max-w-2xl">
+        <div className="mx-auto w-full md:w-2/3 xl:w-1/2">
           <h2 id="faq-heading" className="font-display text-2xl sm:text-3xl">
             FAQ
           </h2>

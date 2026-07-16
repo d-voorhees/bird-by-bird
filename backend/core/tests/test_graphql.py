@@ -305,6 +305,44 @@ class TestTasks:
         current = graphql(client, "query { currentBird { title } }")
         assert current["data"]["currentBird"]["title"] == "B"
 
+    def test_complete_task_from_flying_later(self, client: Client, user: User) -> None:
+        auth_client(client, user)
+        task_id = graphql(client, 'mutation { addTask(title: "Later done") { id } }')["data"]["addTask"]["id"]
+        graphql(
+            client,
+            """
+            mutation Move($id: ID!) {
+              setTaskStatus(id: $id, status: FLYING_LATER) {
+                id
+              }
+            }
+            """,
+            {"id": task_id},
+        )
+
+        response = graphql(
+            client,
+            """
+            mutation Complete($id: ID!) {
+              completeTask(id: $id) {
+                id
+                status
+                completedAt
+              }
+            }
+            """,
+            {"id": task_id},
+        )
+        assert "errors" not in response
+        assert response["data"]["completeTask"]["status"] == "DONE"
+        assert response["data"]["completeTask"]["completedAt"] is not None
+
+        flying_later = graphql(client, "query { flyingLater { id } }")
+        assert flying_later["data"]["flyingLater"] == []
+        history = graphql(client, "query { history(limit: 10, offset: 0) { id status } }")
+        assert history["data"]["history"][0]["id"] == task_id
+        assert history["data"]["history"][0]["status"] == "DONE"
+
     def test_skip_task_moves_to_bottom(self, client: Client, user: User) -> None:
         auth_client(client, user)
         first = graphql(client, 'mutation { addTask(title: "A") { id } }')["data"]["addTask"]["id"]
