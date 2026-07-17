@@ -94,15 +94,38 @@ function FlockScreen() {
   const awaitingTasksRef = useRef<Task[]>([]);
   const flyingLaterTasksRef = useRef<Task[]>([]);
 
-  useEffect(() => {
-    setAwaitingTasks(flockFromServer);
-    awaitingTasksRef.current = flockFromServer;
-  }, [flockFromServer]);
+  const dedupeTaskLists = useCallback((nextAwaiting: Task[], nextFlyingLater: Task[]) => {
+    const seen = new Set<string>();
+    const awaiting = nextAwaiting.filter((task) => {
+      if (seen.has(task.id)) return false;
+      seen.add(task.id);
+      return true;
+    });
+    const flyingLater = nextFlyingLater.filter((task) => {
+      if (seen.has(task.id)) return false;
+      seen.add(task.id);
+      return true;
+    });
+    return {
+      awaiting: awaiting.map((task) => ({ ...task, status: "ACTIVE" as const })),
+      flyingLater: flyingLater.map((task) => ({ ...task, status: "FLYING_LATER" as const })),
+    };
+  }, []);
+
+  const applyTaskLists = useCallback(
+    (nextAwaiting: Task[], nextFlyingLater: Task[]) => {
+      const deduped = dedupeTaskLists(nextAwaiting, nextFlyingLater);
+      setAwaitingTasks(deduped.awaiting);
+      setFlyingLaterTasks(deduped.flyingLater);
+      awaitingTasksRef.current = deduped.awaiting;
+      flyingLaterTasksRef.current = deduped.flyingLater;
+    },
+    [dedupeTaskLists],
+  );
 
   useEffect(() => {
-    setFlyingLaterTasks(flyingLaterFromServer);
-    flyingLaterTasksRef.current = flyingLaterFromServer;
-  }, [flyingLaterFromServer]);
+    applyTaskLists(flockFromServer, flyingLaterFromServer);
+  }, [applyTaskLists, flockFromServer, flyingLaterFromServer]);
 
   useEffect(() => {
     awaitingTasksRef.current = awaitingTasks;
@@ -208,10 +231,7 @@ function FlockScreen() {
       dragStartContainerRef.current = null;
 
       if (!over) {
-        setAwaitingTasks(flockFromServer);
-        setFlyingLaterTasks(flyingLaterFromServer);
-        awaitingTasksRef.current = flockFromServer;
-        flyingLaterTasksRef.current = flyingLaterFromServer;
+        applyTaskLists(flockFromServer, flyingLaterFromServer);
         return;
       }
 
@@ -222,10 +242,10 @@ function FlockScreen() {
 
       const sourceList =
         sourceContainer === AWAITING_CONTAINER ? awaitingTasks : flyingLaterTasks;
-      const sourceIndex = sourceList.findIndex((task) => task.id === activeId);
-      if (sourceIndex < 0) return;
 
       if (sourceContainer === finalContainer && targetContainer === finalContainer) {
+        const sourceIndex = sourceList.findIndex((task) => task.id === activeId);
+        if (sourceIndex < 0) return;
         const oldIndex = sourceIndex;
         const newIndex =
           overId === targetContainer
@@ -237,9 +257,9 @@ function FlockScreen() {
         const orderedIds = reordered.map((task) => task.id);
 
         if (sourceContainer === AWAITING_CONTAINER) {
-          setAwaitingTasks(reordered);
+          applyTaskLists(reordered, flyingLaterTasksRef.current);
         } else {
-          setFlyingLaterTasks(reordered);
+          applyTaskLists(awaitingTasksRef.current, reordered);
         }
 
         try {
@@ -263,8 +283,7 @@ function FlockScreen() {
             });
           }
         } catch (error) {
-          setAwaitingTasks(flockFromServer);
-          setFlyingLaterTasks(flyingLaterFromServer);
+          applyTaskLists(flockFromServer, flyingLaterFromServer);
           notify(error instanceof Error ? error.message : "Could not reorder tasks");
         }
         return;
@@ -314,10 +333,7 @@ function FlockScreen() {
           },
         });
       } catch (error) {
-        setAwaitingTasks(flockFromServer);
-        setFlyingLaterTasks(flyingLaterFromServer);
-        awaitingTasksRef.current = flockFromServer;
-        flyingLaterTasksRef.current = flyingLaterFromServer;
+        applyTaskLists(flockFromServer, flyingLaterFromServer);
         notify(error instanceof Error ? error.message : "Could not move task");
       }
     },
@@ -327,6 +343,7 @@ function FlockScreen() {
       flockFromServer,
       flyingLaterFromServer,
       getContainerId,
+      applyTaskLists,
       reorderFlyingLaterTasks,
       reorderTasks,
       setTaskStatus,
@@ -362,23 +379,17 @@ function FlockScreen() {
       );
       if (!next) return;
 
-      setAwaitingTasks(next.awaiting);
-      setFlyingLaterTasks(next.flyingLater);
-      awaitingTasksRef.current = next.awaiting;
-      flyingLaterTasksRef.current = next.flyingLater;
+      applyTaskLists(next.awaiting, next.flyingLater);
     },
-    [getContainerId, moveTaskAcrossLists, showFlyingLater],
+    [getContainerId, moveTaskAcrossLists, showFlyingLater, applyTaskLists],
   );
 
   const handleDragCancel = useCallback(
     () => {
       dragStartContainerRef.current = null;
-      setAwaitingTasks(flockFromServer);
-      setFlyingLaterTasks(flyingLaterFromServer);
-      awaitingTasksRef.current = flockFromServer;
-      flyingLaterTasksRef.current = flyingLaterFromServer;
+      applyTaskLists(flockFromServer, flyingLaterFromServer);
     },
-    [flockFromServer, flyingLaterFromServer],
+    [flockFromServer, flyingLaterFromServer, applyTaskLists],
   );
 
   return (
