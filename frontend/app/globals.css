@@ -122,10 +122,10 @@ body {
 .flock-row__text--title-only .editable-task-content--title-only {
   align-self: stretch;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   position: relative;
   width: 100%;
-  padding-bottom: 20px;
+  min-height: 2.5em;
 }
 
 .flock-row__text .task-notes-trigger--overlay {
