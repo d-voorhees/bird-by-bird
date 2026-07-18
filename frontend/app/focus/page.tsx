@@ -3,10 +3,14 @@
 import { useMutation, useQuery } from "@apollo/client/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ProtectedShell } from "@/components/AuthShell";
-import { AddTaskModal } from "@/components/AddTaskModal";
+import {
+  AddTaskModal,
+  openAddTaskModal,
+  type AddTaskModalHandle,
+} from "@/components/AddTaskModal";
 import { BirdImage } from "@/components/BirdImage";
 import { EditableTaskContent } from "@/components/EditableTaskContent";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -74,6 +78,7 @@ function ZeroTasksGate({ children }: { children: React.ReactNode }) {
 
 function BirdScreen() {
   const [addOpen, setAddOpen] = useState(false);
+  const addTaskModalRef = useRef<AddTaskModalHandle>(null);
   const [displayTask, setDisplayTask] = useState<Task | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showSingleBirdPrompt, setShowSingleBirdPrompt] = useState(false);
@@ -228,7 +233,7 @@ function BirdScreen() {
               </button>
               <button
                 type="button"
-                onClick={() => setAddOpen(true)}
+                onClick={() => openAddTaskModal(setAddOpen, addTaskModalRef)}
                 className="rounded-md border border-stone/30 px-6 py-3 text-sm font-medium text-ink transition hover:border-ink/30"
               >
                 Add another
@@ -284,7 +289,7 @@ function BirdScreen() {
             {displayTask ? (
               <button
                 type="button"
-                onClick={() => setAddOpen(true)}
+                onClick={() => openAddTaskModal(setAddOpen, addTaskModalRef)}
                 className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-stone/30 text-xl font-medium leading-none text-ink transition hover:border-ink/30"
                 aria-label="Add a new bird"
               >
@@ -293,7 +298,7 @@ function BirdScreen() {
             ) : (
               <button
                 type="button"
-                onClick={() => setAddOpen(true)}
+                onClick={() => openAddTaskModal(setAddOpen, addTaskModalRef)}
                 className="rounded-md bg-accent px-6 py-3 text-sm font-medium text-accent-fg transition hover:bg-accent/90"
                 aria-label="Add a new bird"
               >
@@ -305,6 +310,7 @@ function BirdScreen() {
       ) : null}
 
       <AddTaskModal
+        ref={addTaskModalRef}
         open={addOpen}
         onClose={() => setAddOpen(false)}
         focusNewTask

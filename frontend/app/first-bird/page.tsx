@@ -3,10 +3,14 @@
 import { useQuery } from "@apollo/client/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ProtectedShell } from "@/components/AuthShell";
-import { AddTaskModal } from "@/components/AddTaskModal";
+import {
+  AddTaskModal,
+  openAddTaskModal,
+  type AddTaskModalHandle,
+} from "@/components/AddTaskModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FLOCK_QUERY, HISTORY_QUERY } from "@/lib/graphql/operations";
 import type { Task } from "@/lib/types";
@@ -22,6 +26,7 @@ export default function FirstBirdPage() {
 function FirstBirdScreen() {
   const router = useRouter();
   const [addOpen, setAddOpen] = useState(false);
+  const addTaskModalRef = useRef<AddTaskModalHandle>(null);
 
   const { data: flockData, loading: flockLoading } = useQuery<{ flock: Task[] }>(
     FLOCK_QUERY,
@@ -92,7 +97,7 @@ function FirstBirdScreen() {
           </p>
           <button
             type="button"
-            onClick={() => setAddOpen(true)}
+            onClick={() => openAddTaskModal(setAddOpen, addTaskModalRef)}
             className="mt-8 rounded-md bg-accent px-6 py-3 text-sm font-medium text-accent-fg transition hover:bg-accent/90"
           >
             Add your first bird
@@ -101,6 +106,7 @@ function FirstBirdScreen() {
       </section>
 
       <AddTaskModal
+        ref={addTaskModalRef}
         open={addOpen}
         onClose={() => setAddOpen(false)}
         focusNewTask

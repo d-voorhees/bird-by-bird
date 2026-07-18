@@ -11,6 +11,7 @@ import {
   HISTORY_QUERY,
   UPDATE_TASK_MUTATION,
 } from "@/lib/graphql/operations";
+import { linkifyText } from "@/lib/linkifyText";
 import type { Task } from "@/lib/types";
 
 type RefetchQuery = {
@@ -203,14 +204,16 @@ export function EditableTaskContent({
         />
       ) : hasNotes ? (
         <div className="task-notes-group">
-          <button
-            type="button"
+          <div
             onClick={() => setEditingNotes(true)}
-            className={`w-full border-b border-transparent hover:border-stone/20 ${notesClass} ${align === "center" ? "text-center" : "text-left"}`}
+            className={`w-full cursor-text border-b border-transparent hover:border-stone/20 ${notesClass} ${align === "center" ? "text-center" : "text-left"}`}
             aria-label="Edit task notes"
           >
-            {task.notes}
-          </button>
+            {linkifyText(
+              task.notes ?? "",
+              "underline underline-offset-2 hover:text-ink",
+            )}
+          </div>
         </div>
       ) : (
         <div className="task-notes-group">

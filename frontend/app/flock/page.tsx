@@ -23,7 +23,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ProtectedShell } from "@/components/AuthShell";
-import { AddTaskModal } from "@/components/AddTaskModal";
+import {
+  AddTaskModal,
+  openAddTaskModal,
+  type AddTaskModalHandle,
+} from "@/components/AddTaskModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { BirdImage } from "@/components/BirdImage";
 import { EditableTaskContent, taskEditRefetchQueries } from "@/components/EditableTaskContent";
@@ -61,6 +65,7 @@ export default function FlockPage() {
 
 function FlockScreen() {
   const [addOpen, setAddOpen] = useState(false);
+  const addTaskModalRef = useRef<AddTaskModalHandle>(null);
   const [showFlyingLater, setShowFlyingLater] = useState(true);
   const [showCompleted, setShowCompleted] = useState(true);
 
@@ -444,7 +449,9 @@ function FlockScreen() {
                   </div>
                 }
                 action={
-                  <FlockSecondaryButton onClick={() => setAddOpen(true)}>
+                  <FlockSecondaryButton
+                    onClick={() => openAddTaskModal(setAddOpen, addTaskModalRef)}
+                  >
                     add new task
                   </FlockSecondaryButton>
                 }
@@ -466,7 +473,9 @@ function FlockScreen() {
                   </div>
                 }
                 action={
-                  <FlockSecondaryButton onClick={() => setAddOpen(true)}>
+                  <FlockSecondaryButton
+                    onClick={() => openAddTaskModal(setAddOpen, addTaskModalRef)}
+                  >
                     add another
                   </FlockSecondaryButton>
                 }
@@ -543,7 +552,9 @@ function FlockScreen() {
                 list={<p className="text-sm text-ink/40">Nothing completed yet today.</p>}
                 action={
                   hasOlderHistory ? (
-                    <FlockSecondaryLink href="/history">older history</FlockSecondaryLink>
+                    <div className="flex justify-end">
+                      <FlockSecondaryLink href="/history">older history</FlockSecondaryLink>
+                    </div>
                   ) : undefined
                 }
               />
@@ -557,13 +568,13 @@ function FlockScreen() {
                   </div>
                 }
                 action={
-                  <div className="flex items-center gap-3">
-                    {hasOlderHistory ? (
-                      <FlockSecondaryLink href="/history">older history</FlockSecondaryLink>
-                    ) : null}
+                  <div className="flex items-center justify-between">
                     <FlockSecondaryButton onClick={() => setShowCompleted(false)}>
                       hide completed
                     </FlockSecondaryButton>
+                    {hasOlderHistory ? (
+                      <FlockSecondaryLink href="/history">older history</FlockSecondaryLink>
+                    ) : null}
                   </div>
                 }
               />
@@ -584,7 +595,11 @@ function FlockScreen() {
 
       <CreditsLink />
 
-      <AddTaskModal open={addOpen} onClose={() => setAddOpen(false)} />
+      <AddTaskModal
+        ref={addTaskModalRef}
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+      />
     </main>
   );
 }
