@@ -725,7 +725,7 @@ function TaskRow({
               }`}
             >
               {showFlyingLaterLabel ? (
-                <p className="mb-1 text-[10px] uppercase tracking-wide text-ink/45">flying later</p>
+                <p className="mb-0 text-[10px] uppercase tracking-wide text-ink/45">flying later</p>
               ) : null}
               <EditableTaskContent
                 task={task}
