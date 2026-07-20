@@ -128,6 +128,14 @@ body {
   min-height: 2.5em;
 }
 
+/* When the "flying later" label is shown above the title, the title must sit
+   a fixed distance below the label instead of being centered in the taller
+   box above — otherwise the gap differs between cards with and without notes. */
+.flock-row__text--has-label .editable-task-content--title-only {
+  align-items: flex-start;
+  min-height: 0;
+}
+
 .flock-row__text .task-notes-trigger--overlay {
   position: absolute;
   inset: 0;

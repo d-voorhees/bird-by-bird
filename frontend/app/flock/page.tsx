@@ -719,7 +719,11 @@ function TaskRow({
 
         <div className="flex min-w-0 flex-1 flex-col sm:flex-row sm:items-center">
           <FlockRowText task={task}>
-            <div className="flex min-w-0 flex-1 flex-col">
+            <div
+              className={`flex min-w-0 flex-1 flex-col${
+                showFlyingLaterLabel ? " flock-row__text--has-label" : ""
+              }`}
+            >
               {showFlyingLaterLabel ? (
                 <p className="mb-1 text-[10px] uppercase tracking-wide text-ink/45">flying later</p>
               ) : null}
