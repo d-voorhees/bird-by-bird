@@ -8,6 +8,7 @@ import { AuthCreditsFooter } from "@/components/AuthCreditsFooter";
 import { useAuth } from "@/components/Providers";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { notify } from "@/components/ToastHost";
+import { friendlyErrorMessage } from "@/lib/errors";
 import { RESEND_VERIFICATION_EMAIL_MUTATION } from "@/lib/graphql/operations";
 
 export function EmailVerificationGate() {
@@ -25,7 +26,7 @@ export function EmailVerificationGate() {
       setSent(true);
       notify("Verification email sent. Check your inbox.");
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Could not resend email");
+      notify(friendlyErrorMessage(error, "Could not resend email"));
     }
   };
 

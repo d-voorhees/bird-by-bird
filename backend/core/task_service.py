@@ -73,16 +73,26 @@ def add_task(user: User, title: str, notes: str | None, do_next: bool = False) -
 
 @transaction.atomic
 def complete_task(user: User, task_id: UUID | str) -> Task:
-    task = Task.objects.select_for_update().get(id=task_id, user=user)
-    if task.status not in {TaskStatus.ACTIVE, TaskStatus.FLYING_LATER}:
+    task_id = str(task_id)
+    source_status = Task.objects.filter(id=task_id, user=user).values_list("status", flat=True).first()
+    if source_status is None:
+        raise Task.DoesNotExist()
+    if source_status not in {TaskStatus.ACTIVE, TaskStatus.FLYING_LATER}:
         raise ValueError("Task is not active or flying later")
 
-    source_status = task.status
+    # Lock every task in this status set in a single, id-ordered query so
+    # concurrent completions never acquire the same two row locks in reverse
+    # order (which previously caused Postgres deadlocks under rapid clicks).
+    locked = list(_tasks_for_status(user, source_status).select_for_update().order_by("id"))
+    task = next((t for t in locked if str(t.id) == task_id), None)
+    if task is None:
+        raise Task.DoesNotExist()
+
     task.status = TaskStatus.DONE
     task.completed_at = _utcnow()
     task.save(update_fields=["status", "completed_at"])
 
-    remaining = [t for t in _tasks_for_status(user, source_status).select_for_update()]
+    remaining = sorted((t for t in locked if t.id != task.id), key=lambda t: t.position)
     if remaining:
         _normalize_positions(user, remaining)
     return task

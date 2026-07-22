@@ -5,6 +5,7 @@ import type { DocumentNode } from "graphql";
 import { useEffect, useRef, useState } from "react";
 
 import { notify } from "@/components/ToastHost";
+import { friendlyErrorMessage } from "@/lib/errors";
 import {
   CURRENT_BIRD_QUERY,
   FLOCK_QUERY,
@@ -86,7 +87,7 @@ export function EditableTaskContent({
       await updateTask({ variables: { id: task.id, title: trimmed } });
     } catch (error) {
       setTitle(task.title);
-      notify(error instanceof Error ? error.message : "Could not update title");
+      notify(friendlyErrorMessage(error, "Could not update title"));
     }
   };
 
@@ -102,7 +103,7 @@ export function EditableTaskContent({
       await updateTask({ variables: { id: task.id, notes: trimmed } });
     } catch (error) {
       setNotes(task.notes ?? "");
-      notify(error instanceof Error ? error.message : "Could not update notes");
+      notify(friendlyErrorMessage(error, "Could not update notes"));
     }
   };
 

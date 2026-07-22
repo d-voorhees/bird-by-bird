@@ -41,6 +41,7 @@ import {
 } from "@/components/FlockSecondaryAction";
 import { DragReorderButton, SquareCheckbox } from "@/components/SquareCheckbox";
 import { notify } from "@/components/ToastHost";
+import { friendlyErrorMessage } from "@/lib/errors";
 import {
   COMPLETE_TASK_MUTATION,
   CURRENT_BIRD_QUERY,
@@ -289,7 +290,7 @@ function FlockScreen() {
           }
         } catch (error) {
           applyTaskLists(flockFromServer, flyingLaterFromServer);
-          notify(error instanceof Error ? error.message : "Could not reorder tasks");
+          notify(friendlyErrorMessage(error, "Could not reorder tasks"));
         }
         return;
       }
@@ -339,7 +340,7 @@ function FlockScreen() {
         });
       } catch (error) {
         applyTaskLists(flockFromServer, flyingLaterFromServer);
-        notify(error instanceof Error ? error.message : "Could not move task");
+        notify(friendlyErrorMessage(error, "Could not move task"));
       }
     },
     [
@@ -672,7 +673,7 @@ function TaskRow({
     try {
       await action();
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Action failed");
+      notify(friendlyErrorMessage(error, "Action failed"));
     }
   };
 

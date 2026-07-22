@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 
 import graphene
+from django.db import OperationalError
 from django.db.models import Q
 from django.utils import timezone
 from graphql import GraphQLError
@@ -211,6 +212,16 @@ class CompleteTask(graphene.Mutation):
             raise GraphQLError("Task not found") from None
         except ValueError as exc:
             raise GraphQLError(str(exc)) from exc
+        except OperationalError as exc:
+            logger.warning("complete_task hit a lock conflict, retrying once: %s", exc)
+            try:
+                return task_service.complete_task(user, id)
+            except Task.DoesNotExist:
+                raise GraphQLError("Task not found") from None
+            except ValueError as retry_exc:
+                raise GraphQLError(str(retry_exc)) from retry_exc
+            except OperationalError as retry_exc:
+                raise GraphQLError("Please try again") from retry_exc
 
 
 class SkipTask(graphene.Mutation):

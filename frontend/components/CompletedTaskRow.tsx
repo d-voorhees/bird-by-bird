@@ -7,6 +7,7 @@ import { EditableTaskContent, taskEditRefetchQueries } from "@/components/Editab
 import { FlockRowText } from "@/components/FlockRowText";
 import { SquareCheckbox } from "@/components/SquareCheckbox";
 import { notify } from "@/components/ToastHost";
+import { friendlyErrorMessage } from "@/lib/errors";
 import {
   UNCOMPLETE_TASK_MUTATION,
 } from "@/lib/graphql/operations";
@@ -60,7 +61,7 @@ export function CompletedTaskRow({
         },
       });
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Could not restore task");
+      notify(friendlyErrorMessage(error, "Could not restore task"));
     }
   };
 

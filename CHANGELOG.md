@@ -4,6 +4,16 @@ A running log of what changed and why.
 
 ---
 
+## v1.6 Fix double-complete deadlock — July 22, 2026
+
+### Completing tasks quickly
+
+- Fixed a bug where marking two tasks complete in quick succession could deadlock in the database, causing one of the two to silently fail and pop up a raw, meaningless error (e.g. a bare HTTP status code) instead of succeeding or showing a clear message.
+- `completeTask` now locks all of a user's active (or flying-later) tasks in a single, consistently-ordered query instead of locking the target task first and its siblings second, which is what caused the deadlock under concurrent completions.
+- Added a one-time automatic retry on the backend if a lock conflict does still occur, so a rare conflict resolves itself instead of surfacing to the user.
+
+---
+
 ## v1.5 Flying later queue — July 16, 2026
 
 ### What changed in the flock
