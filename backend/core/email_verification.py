@@ -33,7 +33,9 @@ def create_and_send_verification_email(user: User) -> None:
         message=(
             "Thanks for signing up.\n\n"
             f"Verify your email address by opening this link:\n{verify_url}\n\n"
-            "If you did not create an account, you can ignore this email."
+            "If you did not create an account, you can ignore this email.\n\n"
+            "If you like this project, a star on GitHub would be appreciated: "
+            "https://github.com/d-voorhees/bird-by-bird"
         ),
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],

@@ -32,7 +32,9 @@ def create_and_send_password_reset_email(user: User) -> None:
         message=(
             "We received a request to reset your password.\n\n"
             f"Open this link to choose a new password:\n{reset_url}\n\n"
-            "The link expires in one hour. If you did not request this, you can ignore this email."
+            "The link expires in one hour. If you did not request this, you can ignore this email.\n\n"
+            "If you like this project, a star on GitHub would be appreciated: "
+            "https://github.com/d-voorhees/bird-by-bird"
         ),
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
