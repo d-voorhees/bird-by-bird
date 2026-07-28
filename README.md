@@ -2,7 +2,7 @@
 
 A single-task focus tool. One active task at a time, a deliberate backlog (the flock), and a history of what you finished.
 
-**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.6
+**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.7
 
 ---
 
@@ -109,6 +109,13 @@ pnpm exec tsc --noEmit
 | Email | `verifyEmail`, `resendVerificationEmail` |
 | Password | `requestPasswordReset`, `resetPassword` |
 | Tasks | `addTask`, `completeTask`, `uncompleteTask`, `skipTask`, `abandonTask`, `deleteTask`, `updateTask`, `reorderTasks`, `reorderFlyingLaterTasks`, `setTaskStatus`, `promoteTask`, `clearHistory` |
+
+## What's new in v1.7
+
+- Fixed a bug where a database connection getting killed server-side (idle timeout, restart) could send its raw Postgres error text ("terminating connection due to administrator command") straight to the browser instead of a normal error.
+- The GraphQL backend now masks any error that wasn't raised intentionally by app code, logging the real exception server-side and returning a generic message to the client. Intentional errors (e.g. "Task not found") are unaffected.
+- Removed Django's persistent DB connections (`CONN_MAX_AGE` 600s → 0), the root cause: a request could get handed a connection the server had already killed since it was last used.
+- Added a one-time automatic frontend retry for the narrow class of masked errors caused by a dropped connection, so the rare remaining case resolves itself instead of surfacing to the user.
 
 ## What's new in v1.6
 

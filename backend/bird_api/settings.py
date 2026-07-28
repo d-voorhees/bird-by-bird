@@ -69,7 +69,11 @@ DEFAULT_DATABASE_URL = (
 DATABASES = {
     "default": dj_database_url.config(
         default=os.environ.get("DATABASE_URL", DEFAULT_DATABASE_URL),
-        conn_max_age=600,
+        # A held-open connection can be silently killed server-side (DB
+        # restart, provider idle timeout) and Django won't notice until a
+        # query fails on it. Traffic here is low enough that reconnecting
+        # per request is cheap, so don't hold connections open at all.
+        conn_max_age=0,
         ssl_require=not DEBUG,
     )
 }

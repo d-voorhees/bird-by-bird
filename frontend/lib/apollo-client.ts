@@ -1,12 +1,18 @@
 import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from "@apollo/client";
 import { CombinedGraphQLErrors } from "@apollo/client/errors";
-import { onError } from "@apollo/client/link/error";
+import { ErrorLink, onError } from "@apollo/client/link/error";
 
 const serverGraphqlUrl =
   process.env.NEXT_PUBLIC_GRAPHQL_URL ?? "http://127.0.0.1:8000/graphql/";
 
 const browserGraphqlUrl = "/graphql";
 const SESSION_LOST_EVENT = "bird:session-lost";
+
+// Matches core.views.TRANSIENT_ERROR_CODE on the backend: masked errors
+// caused by a dropped DB connection, safe to retry once without the user
+// ever seeing them.
+const TRANSIENT_ERROR_CODE = "TRANSIENT_ERROR";
+const MAX_TRANSIENT_RETRIES = 1;
 
 const REQUEST_TIMEOUT_MS = 15000;
 
@@ -47,6 +53,19 @@ function makeClient(uri: string) {
     }
   });
 
+  const transientRetryLink = new ErrorLink(({ error, operation, forward }) => {
+    const isTransient = CombinedGraphQLErrors.is(error)
+      ? error.errors.some((graphQLError) => graphQLError.extensions?.code === TRANSIENT_ERROR_CODE)
+      : false;
+    if (!isTransient) return;
+
+    const retryCount = (operation.getContext().transientRetryCount as number | undefined) ?? 0;
+    if (retryCount >= MAX_TRANSIENT_RETRIES) return;
+
+    operation.setContext({ transientRetryCount: retryCount + 1 });
+    return forward(operation);
+  });
+
   const httpLink = new HttpLink({
     uri,
     credentials: "include",
@@ -54,7 +73,7 @@ function makeClient(uri: string) {
   });
 
   return new ApolloClient({
-    link: ApolloLink.from([authErrorLink, httpLink]),
+    link: ApolloLink.from([transientRetryLink, authErrorLink, httpLink]),
     cache: new InMemoryCache(),
     defaultOptions: {
       watchQuery: {

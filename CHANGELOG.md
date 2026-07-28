@@ -4,6 +4,17 @@ A running log of what changed and why.
 
 ---
 
+## v1.7 Stop leaking raw DB errors to the browser — July 27, 2026
+
+### Occasional "terminating connection due to administrator command" errors
+
+- Fixed a bug where a database connection getting killed server-side (idle timeout, restart) could send its raw Postgres error text straight to the browser instead of a normal error.
+- Backend now masks any GraphQL error that wasn't raised intentionally by app code — unexpected exceptions (DB errors, bugs) are logged server-side and return a generic "Something went wrong. Please try again." message instead of leaking internals. Errors we raise on purpose (e.g. "Task not found") are unaffected.
+- Removed Django's persistent DB connections (`CONN_MAX_AGE` 600s → 0), which was the root cause: a request could get handed a connection that had already been killed on the server since the last time it was used. Traffic is light enough that reconnecting per request is negligible.
+- Added a one-time automatic frontend retry (Apollo `ErrorLink`) for the narrow class of masked errors caused by a dropped connection, so a rare remaining case resolves itself instead of surfacing to the user at all.
+
+---
+
 ## v1.6 Fix double-complete deadlock — July 22, 2026
 
 ### Completing tasks quickly
