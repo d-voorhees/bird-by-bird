@@ -430,13 +430,12 @@ function FlockScreen() {
         >
           <div className="space-y-12">
           <section aria-labelledby="awaiting-flight-heading">
-            <SectionCountToggle count={awaitingTasks.length} label="Awaiting flight count" />
-            <h2
-              id="awaiting-flight-heading"
-              className="mb-4 font-display text-lg text-ink"
-            >
-              Awaiting flight
-            </h2>
+            <div className="mb-4 flex items-baseline justify-between">
+              <h2 id="awaiting-flight-heading" className="font-display text-lg text-ink">
+                Awaiting flight
+              </h2>
+              <SectionCountToggle count={awaitingTasks.length} label="Awaiting flight count" />
+            </div>
             {flockLoading && !flockData ? (
               <p className="text-sm text-ink/40">Loading…</p>
             ) : flockError ? (
@@ -486,11 +485,12 @@ function FlockScreen() {
           </section>
 
           <section aria-labelledby="flying-later-heading">
-            <SectionCountToggle count={flyingLaterTasks.length} label="Flying later count" />
-            <h2 id="flying-later-heading" className="font-display text-lg text-ink">
-              Flying later
-            </h2>
-            <div className="mb-4 mt-1" />
+            <div className="mb-4 flex items-baseline justify-between">
+              <h2 id="flying-later-heading" className="font-display text-lg text-ink">
+                Flying later
+              </h2>
+              <SectionCountToggle count={flyingLaterTasks.length} label="Flying later count" />
+            </div>
 
             {flyingLaterLoading && !flyingLaterData ? (
               <p className="text-sm text-ink/40">Loading…</p>
@@ -541,10 +541,14 @@ function FlockScreen() {
           </section>
 
           <section aria-labelledby="flown-heading">
-            <SectionCountToggle count={tasksFlownToday.length} label="Flown today count" />
-            <h2 id="flown-heading" className="mb-4 font-display text-lg text-ink">
-              {tasksFlownToday.length === 1 ? "This bird has flown" : "These birds have flown"}
-            </h2>
+            <div className="mb-4 flex items-baseline justify-between">
+              <h2 id="flown-heading" className="font-display text-lg text-ink">
+                {tasksFlownToday.length === 1 ? "This bird has flown" : "These birds have flown"}
+              </h2>
+              <span className="text-xs text-ink/45" aria-label="Flown today count">
+                {tasksFlownToday.length}
+              </span>
+            </div>
             {historyLoading && !historyData ? (
               <p className="text-sm text-ink/40">Loading…</p>
             ) : historyError ? (
@@ -612,16 +616,14 @@ function SectionCountToggle({ count, label }: { count: number; label: string }) 
   const [show, setShow] = useState(false);
 
   return (
-    <div className="mb-1 flex justify-end">
-      <button
-        type="button"
-        onClick={() => setShow((prev) => !prev)}
-        aria-label={label}
-        className="text-xs text-ink/45 underline-offset-2 hover:text-ink/70 hover:underline"
-      >
-        {show ? count : "show count"}
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={() => setShow((prev) => !prev)}
+      aria-label={label}
+      className="text-xs text-ink/45 underline-offset-2 hover:text-ink/70 hover:underline"
+    >
+      {show ? count : "show count"}
+    </button>
   );
 }
 
