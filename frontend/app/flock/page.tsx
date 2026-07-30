@@ -430,6 +430,7 @@ function FlockScreen() {
         >
           <div className="space-y-12">
           <section aria-labelledby="awaiting-flight-heading">
+            <SectionCountToggle count={awaitingTasks.length} label="Awaiting flight count" />
             <h2
               id="awaiting-flight-heading"
               className="mb-4 font-display text-lg text-ink"
@@ -485,6 +486,7 @@ function FlockScreen() {
           </section>
 
           <section aria-labelledby="flying-later-heading">
+            <SectionCountToggle count={flyingLaterTasks.length} label="Flying later count" />
             <h2 id="flying-later-heading" className="font-display text-lg text-ink">
               Flying later
             </h2>
@@ -539,6 +541,7 @@ function FlockScreen() {
           </section>
 
           <section aria-labelledby="flown-heading">
+            <SectionCountToggle count={tasksFlownToday.length} label="Flown today count" />
             <h2 id="flown-heading" className="mb-4 font-display text-lg text-ink">
               {tasksFlownToday.length === 1 ? "This bird has flown" : "These birds have flown"}
             </h2>
@@ -602,6 +605,23 @@ function FlockScreen() {
         onClose={() => setAddOpen(false)}
       />
     </main>
+  );
+}
+
+function SectionCountToggle({ count, label }: { count: number; label: string }) {
+  const [show, setShow] = useState(false);
+
+  return (
+    <div className="mb-1 flex justify-end">
+      <button
+        type="button"
+        onClick={() => setShow((prev) => !prev)}
+        aria-label={label}
+        className="text-xs text-ink/45 underline-offset-2 hover:text-ink/70 hover:underline"
+      >
+        {show ? count : "show count"}
+      </button>
+    </div>
   );
 }
 
