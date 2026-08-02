@@ -4,6 +4,15 @@ A running log of what changed and why.
 
 ---
 
+## v1.8 Reduce Fly.io hosting cost — August 2, 2026
+
+### Backend deploy config
+- Changed backend deploy config so the app machine scales to zero when idle (`min_machines_running` 1 → 0) instead of running 24/7.
+- Reduced VM size from 1GB to 256MB, since the Django backend doesn't need that much memory at this traffic level.
+- Tradeoff: the first request after a period of inactivity now takes ~8 seconds to spin the machine back up, in exchange for only paying for compute while the app is actually being used.
+
+---
+
 ## v1.7 Stop leaking raw DB errors to the browser — July 27, 2026
 
 ### Occasional "terminating connection due to administrator command" errors
