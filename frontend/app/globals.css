@@ -133,7 +133,7 @@ body {
    box above — otherwise the gap differs between cards with and without notes. */
 .flock-row__text--has-label .editable-task-content--title-only {
   align-items: flex-start;
-  min-height: 0;
+  min-height: 2.5em;
 }
 
 .flock-row__text .task-notes-trigger--overlay {
