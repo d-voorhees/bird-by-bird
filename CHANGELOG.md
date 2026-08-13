@@ -4,6 +4,14 @@ A running log of what changed and why.
 
 ---
 
+## v1.9 Remove redundant Fly.io machine — August 13, 2026
+
+### Infrastructure cleanup
+- Scaled the backend app down from 2 machines to 1 (`fly scale count 1`). The app was provisioned with 2 machines in `dfw` at some point, but with `min_machines_running = 0` neither one was ever a warm standby — both sat stopped between requests, so the second machine was pure idle allocation, not redundancy.
+- This is a Fly control-plane change, not a config or code change — machine count isn't tracked in `fly.toml`, so there's nothing to diff in git.
+
+---
+
 ## v1.8 Reduce Fly.io hosting cost — August 2, 2026
 
 ### Backend deploy config
