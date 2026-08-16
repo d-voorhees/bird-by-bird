@@ -26,7 +26,16 @@ export const BIRD_IMAGES = [
 export type BirdImageName = (typeof BIRD_IMAGES)[number];
 export const FALLBACK_BIRD_IMAGE: BirdImageName = BIRD_IMAGES[0];
 
-export function birdImageSrc(filename: string | null | undefined): string | null {
-  if (!filename || !filename.trim()) return `/img/${FALLBACK_BIRD_IMAGE}`;
-  return `/img/${filename}`;
+const BIRD_IMAGE_DIRS = {
+  light: "/img",
+  dark: "/img-dark",
+} as const;
+
+export function birdImageSrc(
+  filename: string | null | undefined,
+  theme: "light" | "dark" = "light",
+): string | null {
+  const dir = BIRD_IMAGE_DIRS[theme];
+  if (!filename || !filename.trim()) return `${dir}/${FALLBACK_BIRD_IMAGE}`;
+  return `${dir}/${filename}`;
 }

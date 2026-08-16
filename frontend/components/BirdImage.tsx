@@ -1,4 +1,5 @@
 import { FALLBACK_BIRD_IMAGE, birdImageSrc } from "@/lib/birds";
+import { useTheme } from "@/components/ThemeProvider";
 
 type BirdImageProps = {
   filename: string | null | undefined;
@@ -11,7 +12,8 @@ export function BirdImage({
   widthPx,
   className = "",
 }: BirdImageProps) {
-  const src = birdImageSrc(filename);
+  const { theme } = useTheme();
+  const src = birdImageSrc(filename, theme);
   if (!src) return null;
 
   return (
@@ -20,7 +22,7 @@ export function BirdImage({
       src={src}
       onError={(event) => {
         event.currentTarget.onerror = null;
-        event.currentTarget.src = `/img/${FALLBACK_BIRD_IMAGE}`;
+        event.currentTarget.src = birdImageSrc(FALLBACK_BIRD_IMAGE, theme) as string;
       }}
       alt=""
       aria-hidden="true"

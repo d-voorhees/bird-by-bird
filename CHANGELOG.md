@@ -4,7 +4,24 @@ A running log of what changed and why.
 
 ---
 
-## v1.10 Stop Add Task modal closing on stray taps — August 16, 2026
+## v1.10 Dark-mode bird icons, Apple touch icon, flock edit modal, Add Task modal fix — August 16, 2026
+
+### Dark-mode bird icons
+
+- Added `frontend/public/img-dark/` as a sibling of `frontend/public/img/`, mirroring the same 24 `Artboard*.svg` filenames in colors suited to dark backgrounds.
+- `birdImageSrc()` (`lib/birds.ts`) now takes a `theme` argument and resolves to `/img` or `/img-dark` accordingly, defaulting to `"light"`.
+- `BirdImage` now reads the current theme via `useTheme()` and passes it through, including in its `onError` fallback, so every bird icon across Flock, Focus, and the landing page switches sets automatically when the user toggles light/dark mode.
+- Note: a few bird `<img>` references bypass `BirdImage` entirely (landing page hero, first-bird, auth shell, email verification gate, and the favicon/apple-touch-icon in `layout.tsx`) and still don't react to the toggle.
+
+### Apple touch icon
+
+- Added `frontend/public/apple-touch-icon.png` (180×180, opaque) — the landing-page bird (`Artboard27.svg`) recolored cream on the brand dark-blue background, so bookmarking the site on iOS shows the bird, not a generic favicon.
+- `metadata.icons.apple` in `app/layout.tsx` now points at `/apple-touch-icon.png`.
+
+### Flock
+
+- Double-clicking a task row in Awaiting flight or Flying later now opens an edit modal, in addition to the existing click-to-edit-inline behavior in the list.
+- New `EditTaskModal` component — same layout/styling as `AddTaskModal`, pre-filled with the task's title and notes, saves via the existing `updateTask` mutation.
 
 ### Add Task modal
 

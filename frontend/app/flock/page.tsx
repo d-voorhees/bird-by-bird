@@ -31,6 +31,7 @@ import {
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { BirdImage } from "@/components/BirdImage";
 import { EditableTaskContent, taskEditRefetchQueries } from "@/components/EditableTaskContent";
+import { EditTaskModal } from "@/components/EditTaskModal";
 import { FlockRowText } from "@/components/FlockRowText";
 import { CompletedTaskRow } from "@/components/CompletedTaskRow";
 import { CreditsLink } from "@/components/CreditsLink";
@@ -67,6 +68,7 @@ export default function FlockPage() {
 function FlockScreen() {
   const [addOpen, setAddOpen] = useState(false);
   const addTaskModalRef = useRef<AddTaskModalHandle>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showFlyingLater, setShowFlyingLater] = useState(true);
   const [showCompleted, setShowCompleted] = useState(true);
 
@@ -467,7 +469,7 @@ function FlockScreen() {
                         strategy={verticalListSortingStrategy}
                       >
                         {awaitingTasks.map((task) => (
-                          <TaskRow key={task.id} task={task} />
+                          <TaskRow key={task.id} task={task} onEdit={setEditingTask} />
                         ))}
                       </SortableContext>
                     </TaskListDropZone>
@@ -514,7 +516,7 @@ function FlockScreen() {
                         strategy={verticalListSortingStrategy}
                       >
                         {flyingLaterTasks.map((task) => (
-                          <TaskRow key={task.id} task={task} showFlyingLaterLabel />
+                          <TaskRow key={task.id} task={task} showFlyingLaterLabel onEdit={setEditingTask} />
                         ))}
                       </SortableContext>
                     </TaskListDropZone>
@@ -608,6 +610,8 @@ function FlockScreen() {
         open={addOpen}
         onClose={() => setAddOpen(false)}
       />
+
+      <EditTaskModal task={editingTask} onClose={() => setEditingTask(null)} />
     </main>
   );
 }
@@ -653,9 +657,11 @@ function TaskListDropZone({ id, children }: { id: string; children: React.ReactN
 function TaskRow({
   task,
   showFlyingLaterLabel = false,
+  onEdit,
 }: {
   task: Task;
   showFlyingLaterLabel?: boolean;
+  onEdit: (task: Task) => void;
 }) {
   const refetch = [
     { query: FLOCK_QUERY },
@@ -726,6 +732,7 @@ function TaskRow({
       ref={setNodeRef}
       style={style}
       {...attributes}
+      onDoubleClick={() => onEdit(task)}
       className={`flock-list-item rounded-lg border border-stone/20 bg-surface/40 px-3 py-2 ${
         isDragging ? "z-10 opacity-90" : ""
       }`}

@@ -2,7 +2,7 @@
 
 A single-task focus tool. One active task at a time, a deliberate backlog (the flock), and a history of what you finished.
 
-**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.7
+**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.10
 
 ---
 
@@ -109,6 +109,13 @@ pnpm exec tsc --noEmit
 | Email | `verifyEmail`, `resendVerificationEmail` |
 | Password | `requestPasswordReset`, `resetPassword` |
 | Tasks | `addTask`, `completeTask`, `uncompleteTask`, `skipTask`, `abandonTask`, `deleteTask`, `updateTask`, `reorderTasks`, `reorderFlyingLaterTasks`, `setTaskStatus`, `promoteTask`, `clearHistory` |
+
+## What's new in v1.10
+
+- Added dark-mode bird icons: `frontend/public/img-dark/` mirrors `frontend/public/img/`, and `BirdImage` now switches between the two sets based on the light/dark theme toggle.
+- Added an Apple touch icon (`frontend/public/apple-touch-icon.png`) — the landing-page bird on a brand dark-blue background — so bookmarking the site on iOS shows the bird instead of a generic icon.
+- Double-clicking a task row in **Awaiting flight** or **Flying later** now opens an edit modal (`EditTaskModal`), in addition to the existing click-to-edit-inline behavior.
+- Fixed the Add Task modal closing on stray taps that started inside the modal but ended outside it; it now only closes via its explicit close/cancel action or Escape.
 
 ## What's new in v1.7
 
