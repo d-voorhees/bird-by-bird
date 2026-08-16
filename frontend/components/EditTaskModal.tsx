@@ -6,7 +6,8 @@ import { useCallback, useEffect, useState } from "react";
 import { notify } from "@/components/ToastHost";
 import { taskEditRefetchQueries } from "@/components/EditableTaskContent";
 import { friendlyErrorMessage } from "@/lib/errors";
-import { UPDATE_TASK_MUTATION } from "@/lib/graphql/operations";
+import { COMPLETE_TASK_MUTATION, UPDATE_TASK_MUTATION } from "@/lib/graphql/operations";
+import { markTaskDoneInCache } from "@/lib/taskCache";
 import type { Task } from "@/lib/types";
 
 type EditTaskModalProps = {
@@ -22,6 +23,14 @@ export function EditTaskModal({ task, onClose }: EditTaskModalProps) {
   const [updateTask, { loading }] = useMutation(UPDATE_TASK_MUTATION, {
     refetchQueries: taskEditRefetchQueries(),
   });
+  const [completeTask, { loading: completing }] = useMutation<
+    {
+      completeTask:
+        | (Pick<Task, "id" | "status" | "completedAt"> & { __typename?: string })
+        | null;
+    },
+    { id: string }
+  >(COMPLETE_TASK_MUTATION);
 
   useEffect(() => {
     if (task) {
@@ -66,6 +75,32 @@ export function EditTaskModal({ task, onClose }: EditTaskModalProps) {
       handleClose();
     } catch (error) {
       notify(friendlyErrorMessage(error, "Could not update task"));
+    }
+  };
+
+  const handleMarkFinished = async () => {
+    if (!task) return;
+    const optimisticCompletedAt = new Date().toISOString();
+
+    try {
+      await completeTask({
+        variables: { id: task.id },
+        optimisticResponse: {
+          completeTask: {
+            __typename: "TaskType",
+            id: task.id,
+            status: "DONE",
+            completedAt: optimisticCompletedAt,
+          },
+        },
+        update(cache, result) {
+          const completedAt = result.data?.completeTask?.completedAt ?? optimisticCompletedAt;
+          markTaskDoneInCache(cache, task, completedAt, [50]);
+        },
+      });
+      handleClose();
+    } catch (error) {
+      notify(friendlyErrorMessage(error, "Could not mark task finished"));
     }
   };
 
@@ -131,6 +166,17 @@ export function EditTaskModal({ task, onClose }: EditTaskModalProps) {
               className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg transition hover:bg-accent/90 disabled:opacity-50"
             >
               {loading ? "Saving…" : "Save"}
+            </button>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              disabled={completing}
+              onClick={() => void handleMarkFinished()}
+              className="text-sm text-ink/50 underline-offset-2 transition hover:text-ink hover:underline disabled:opacity-50"
+            >
+              {completing ? "Marking finished…" : "mark task finished"}
             </button>
           </div>
         </form>

@@ -28,6 +28,7 @@ A running log of what changed and why.
 
 - Double-clicking a task row in Awaiting flight or Flying later now opens an edit modal, in addition to the existing click-to-edit-inline behavior in the list.
 - New `EditTaskModal` component — same layout/styling as `AddTaskModal`, pre-filled with the task's title and notes, saves via the existing `updateTask` mutation.
+- Added a "mark task finished" text link under the Cancel/Save buttons in the edit modal — muted, underlines on hover, completes the task via the same optimistic `completeTask` cache update used elsewhere on the flock page, then closes the modal.
 
 ### Add Task modal
 
