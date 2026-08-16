@@ -46,3 +46,6 @@ fly.toml.backup
 
 # Developer logs (local only)
 LOG/
+
+# Local-only deployment notes
+DEPLOY.md

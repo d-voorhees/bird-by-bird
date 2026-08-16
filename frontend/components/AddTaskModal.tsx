@@ -124,12 +124,10 @@ export const AddTaskModal = forwardRef<AddTaskModalHandle, AddTaskModalProps>(
     return (
       <div
         className="fixed inset-0 z-40 flex items-end justify-center bg-ink/20 p-4 sm:items-center"
-        onClick={handleClose}
         role="presentation"
       >
         <div
           className="w-full max-w-lg rounded-xl bg-paper p-6 shadow-xl"
-          onClick={(event) => event.stopPropagation()}
           role="dialog"
           aria-modal="true"
           aria-labelledby="add-task-title"

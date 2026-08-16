@@ -4,6 +4,14 @@ A running log of what changed and why.
 
 ---
 
+## v1.10 Stop Add Task modal closing on stray taps — August 16, 2026
+
+### Add Task modal
+
+- Removed the backdrop `onClick` (and its matching `stopPropagation` on the modal body) from `AddTaskModal`, which was closing the modal on any tap that landed outside its content — including taps that started inside the modal (e.g. text selection or a drag) but ended outside it. The modal now only closes via its explicit close/cancel action or the Escape key.
+
+---
+
 ## v1.9 Remove redundant Fly.io machine — August 13, 2026
 
 ### Infrastructure cleanup
