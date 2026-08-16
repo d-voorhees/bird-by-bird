@@ -18,10 +18,11 @@ A running log of what changed and why.
 
 - Changed the dark theme's accent color (`--color-accent` in `app/globals.css`, used for buttons and other accent fills/borders via `bg-accent`/`border-accent`) from `#7eb6e6` to `#23ADEC`, matching the new dark bird color.
 
-### Apple touch icon
+### Apple touch icon + favicon
 
 - Added `frontend/public/apple-touch-icon.png` (180×180, opaque) — the landing-page bird (`Artboard27.svg`) recolored cream on the brand dark-blue background, so bookmarking the site on iOS shows the bird, not a generic favicon.
 - `metadata.icons.apple` in `app/layout.tsx` now points at `/apple-touch-icon.png`.
+- Replaced `app/favicon.ico` (previously the default Next.js triangle icon) and added `frontend/public/favicon-32.png`, both rendered from the same bird-on-blue artwork as the apple touch icon, so the browser tab icon matches instead of showing the unrelated `Artboard7.svg`. `metadata.icons.icon`/`shortcut` in `app/layout.tsx` updated to point at these instead of `/img/Artboard7.svg`.
 
 ### Flock
 

@@ -11,8 +11,11 @@ export const metadata: Metadata = {
   title: "Bird",
   description: "One task at a time.",
   icons: {
-    icon: "/img/Artboard7.svg",
-    shortcut: "/img/Artboard7.svg",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
+    ],
+    shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
 };
