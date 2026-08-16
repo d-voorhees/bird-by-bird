@@ -11,7 +11,12 @@ A running log of what changed and why.
 - Added `frontend/public/img-dark/` as a sibling of `frontend/public/img/`, mirroring the same 24 `Artboard*.svg` filenames in colors suited to dark backgrounds.
 - `birdImageSrc()` (`lib/birds.ts`) now takes a `theme` argument and resolves to `/img` or `/img-dark` accordingly, defaulting to `"light"`.
 - `BirdImage` now reads the current theme via `useTheme()` and passes it through, including in its `onError` fallback, so every bird icon across Flock, Focus, and the landing page switches sets automatically when the user toggles light/dark mode.
+- Dark bird color: `#23ADEC`.
 - Note: a few bird `<img>` references bypass `BirdImage` entirely (landing page hero, first-bird, auth shell, email verification gate, and the favicon/apple-touch-icon in `layout.tsx`) and still don't react to the toggle.
+
+### Dark mode accent color
+
+- Changed the dark theme's accent color (`--color-accent` in `app/globals.css`, used for buttons and other accent fills/borders via `bg-accent`/`border-accent`) from `#7eb6e6` to `#23ADEC`, matching the new dark bird color.
 
 ### Apple touch icon
 
