@@ -4,6 +4,7 @@ import { useMutation } from "@apollo/client/react";
 import { useEffect, useRef, useState } from "react";
 
 import { notify } from "@/components/ToastHost";
+import { friendlyErrorMessage } from "@/lib/errors";
 import {
   CLEAR_HISTORY_MUTATION,
   FLOCK_QUERY,
@@ -57,7 +58,7 @@ export function HistoryClearMenu() {
       await clearHistory();
       setOpen(false);
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Could not clear history");
+      notify(friendlyErrorMessage(error, "Could not clear history"));
     }
   };
 

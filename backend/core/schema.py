@@ -18,6 +18,13 @@ from core.rate_limit import is_rate_limited
 
 logger = logging.getLogger(__name__)
 
+# Sent as an extension on stale-reorder errors, purely so the frontend can
+# tell them apart from other backend errors if it ever needs to (e.g. to
+# trigger a refetch). The message below — not the internal StaleOrderError
+# text, which never leaves the server — is what the user actually sees.
+STALE_ORDER_ERROR_CODE = "STALE_ORDER"
+STALE_ORDER_MESSAGE = "Awakening from a slumber, one moment…"
+
 
 class TaskStatusEnum(graphene.Enum):
     ACTIVE = "active"
@@ -309,6 +316,10 @@ class ReorderTasks(graphene.Mutation):
             from uuid import UUID
 
             return task_service.reorder_tasks(user, [UUID(task_id) for task_id in ordered_ids])
+        except task_service.StaleOrderError as exc:
+            raise GraphQLError(
+                STALE_ORDER_MESSAGE, extensions={"code": STALE_ORDER_ERROR_CODE}
+            ) from exc
         except ValueError as exc:
             raise GraphQLError(str(exc)) from exc
 
@@ -327,6 +338,10 @@ class ReorderFlyingLaterTasks(graphene.Mutation):
             return task_service.reorder_flying_later_tasks(
                 user, [UUID(task_id) for task_id in ordered_ids]
             )
+        except task_service.StaleOrderError as exc:
+            raise GraphQLError(
+                STALE_ORDER_MESSAGE, extensions={"code": STALE_ORDER_ERROR_CODE}
+            ) from exc
         except ValueError as exc:
             raise GraphQLError(str(exc)) from exc
 

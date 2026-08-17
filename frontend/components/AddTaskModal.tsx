@@ -13,6 +13,7 @@ import {
 import { flushSync } from "react-dom";
 
 import { notify } from "@/components/ToastHost";
+import { friendlyErrorMessage } from "@/lib/errors";
 import {
   ADD_TASK_MUTATION,
 } from "@/lib/graphql/operations";
@@ -115,7 +116,7 @@ export const AddTaskModal = forwardRef<AddTaskModalHandle, AddTaskModalProps>(
         }
         handleClose();
       } catch (error) {
-        notify(error instanceof Error ? error.message : "Could not add task");
+        notify(friendlyErrorMessage(error, "Could not add task"));
       }
     };
 

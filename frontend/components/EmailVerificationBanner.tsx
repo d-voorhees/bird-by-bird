@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { useAuth } from "@/components/Providers";
 import { notify } from "@/components/ToastHost";
+import { friendlyErrorMessage } from "@/lib/errors";
 import { RESEND_VERIFICATION_EMAIL_MUTATION } from "@/lib/graphql/operations";
 
 export function EmailVerificationBanner() {
@@ -22,7 +23,7 @@ export function EmailVerificationBanner() {
       setSent(true);
       notify("Verification email sent. Check your inbox.");
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Could not resend email");
+      notify(friendlyErrorMessage(error, "Could not resend email"));
     }
   };
 

@@ -8,6 +8,7 @@ import { useState } from "react";
 import { AuthShell } from "@/components/AuthShell";
 import { useAuth } from "@/components/Providers";
 import { notify } from "@/components/ToastHost";
+import { friendlyErrorMessage } from "@/lib/errors";
 import { SIGN_IN_MUTATION } from "@/lib/graphql/operations";
 
 export default function SignInPage() {
@@ -32,7 +33,7 @@ function SignInForm() {
       await refreshUser();
       router.replace("/focus");
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Sign in failed");
+      notify(friendlyErrorMessage(error, "Sign in failed"));
     }
   };
 

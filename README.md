@@ -2,7 +2,7 @@
 
 A single-task focus tool. One active task at a time, a deliberate backlog (the flock), and a history of what you finished.
 
-**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.10
+**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.11
 
 ---
 
@@ -109,6 +109,11 @@ pnpm exec tsc --noEmit
 | Email | `verifyEmail`, `resendVerificationEmail` |
 | Password | `requestPasswordReset`, `resetPassword` |
 | Tasks | `addTask`, `completeTask`, `uncompleteTask`, `skipTask`, `abandonTask`, `deleteTask`, `updateTask`, `reorderTasks`, `reorderFlyingLaterTasks`, `setTaskStatus`, `promoteTask`, `clearHistory` |
+
+## What's new in v1.11
+
+- Fixed a reorder validation error (triggered when a long-open tab's task list drifts out of sync with the server) that showed a raw, internal-sounding message to users; it now shows a friendly "Awakening from a slumber, one moment…" instead, and the internal message never leaves the server.
+- Nine places across auth, task, and history flows were showing raw `error.message` text (network errors, unfiltered GraphQL errors, etc.) instead of going through the app's `friendlyErrorMessage()` helper; all now filter through it consistently.
 
 ## What's new in v1.10
 

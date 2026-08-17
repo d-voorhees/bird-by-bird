@@ -7,6 +7,7 @@ import { Suspense, useEffect, useState } from "react";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/components/Providers";
+import { friendlyErrorMessage } from "@/lib/errors";
 import { VERIFY_EMAIL_MUTATION } from "@/lib/graphql/operations";
 
 type VerifyState = "loading" | "success" | "error";
@@ -34,7 +35,7 @@ function VerifyEmailContent() {
       })
       .catch((error: unknown) => {
         setState("error");
-        setMessage(error instanceof Error ? error.message : "Verification failed.");
+        setMessage(friendlyErrorMessage(error, "Verification failed."));
       });
   }, [token, verifyEmail, refreshUser]);
 

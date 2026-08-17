@@ -7,6 +7,7 @@ import { useState } from "react";
 import { AuthShell } from "@/components/AuthShell";
 import { useAuth } from "@/components/Providers";
 import { notify } from "@/components/ToastHost";
+import { friendlyErrorMessage } from "@/lib/errors";
 import { SIGN_UP_MUTATION } from "@/lib/graphql/operations";
 
 export default function SignUpPage() {
@@ -31,7 +32,7 @@ function SignUpForm() {
       await refreshUser();
       notify("Account created. Check your email to verify your address.");
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Sign up failed");
+      notify(friendlyErrorMessage(error, "Sign up failed"));
     }
   };
 

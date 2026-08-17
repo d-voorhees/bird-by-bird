@@ -174,7 +174,7 @@ export function EditTaskModal({ task, onClose }: EditTaskModalProps) {
               type="button"
               disabled={completing}
               onClick={() => void handleMarkFinished()}
-              className="text-sm text-ink/50 underline-offset-2 transition hover:text-ink hover:underline disabled:opacity-50"
+              className="text-xs leading-none text-ink/50 underline-offset-2 transition hover:text-ink hover:underline disabled:opacity-50"
             >
               {completing ? "Marking finished…" : "mark task finished"}
             </button>

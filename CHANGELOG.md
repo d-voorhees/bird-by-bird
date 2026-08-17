@@ -4,6 +4,20 @@ A running log of what changed and why.
 
 ---
 
+## v1.11 Stop leaking raw backend error text to users — August 16, 2026
+
+### Stale reorder error
+
+- `reorderTasks`/`reorderFlyingLaterTasks` reject the request if the client's `orderedIds` no longer matches the server's current active (or flying-later) task set — most often because a tab was left open long enough for the two to drift apart. That validation failure used to be sent to the browser as a raw, internal-sounding message ("orderedIds must contain all active task IDs exactly once") and shown verbatim in a toast.
+- `task_service.py` now raises a distinct `StaleOrderError` whose message never leaves the server. `schema.py` catches it separately and returns a friendly `"Awakening from a slumber, one moment…"` instead, tagged with a `STALE_ORDER` extensions code (unused by the frontend today, available if a future fix wants to auto-retry on it).
+
+### Error messages across the app
+
+- Nine places were building their error toast/message from `error instanceof Error ? error.message : "..."`, which shows whatever text a thrown error happens to carry — raw GraphQL errors, network failures, anything — instead of going through `friendlyErrorMessage()`, the helper that only shows text explicitly meant for users.
+- Converted all of them to `friendlyErrorMessage()`: `app/focus/page.tsx`, `app/sign-in/page.tsx`, `app/sign-up/page.tsx`, `app/reset-password/page.tsx`, `app/forgot-password/page.tsx`, `app/verify-email/page.tsx`, `components/HistoryClearMenu.tsx`, `components/EmailVerificationBanner.tsx`, `components/AddTaskModal.tsx`.
+
+---
+
 ## v1.10 Dark-mode bird icons, Apple touch icon, flock edit modal, Add Task modal fix — August 16, 2026
 
 ### Dark-mode bird icons

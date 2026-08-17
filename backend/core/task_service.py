@@ -10,6 +10,10 @@ from core.bird_assignment import pick_bird_image
 from core.models import Task, TaskStatus, User
 
 
+class StaleOrderError(ValueError):
+    """Raised when a reorder request's ID set no longer matches the server's current tasks."""
+
+
 def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -189,7 +193,7 @@ def reorder_tasks(user: User, ordered_ids: list[UUID]) -> list[Task]:
     active_ids = {task.id for task in active}
 
     if set(ordered_ids) != active_ids or len(ordered_ids) != len(active):
-        raise ValueError("orderedIds must contain all active task IDs exactly once")
+        raise StaleOrderError("orderedIds must contain all active task IDs exactly once")
 
     id_to_task = {task.id: task for task in active}
     ordered = [id_to_task[task_id] for task_id in ordered_ids]
@@ -202,7 +206,7 @@ def reorder_flying_later_tasks(user: User, ordered_ids: list[UUID]) -> list[Task
     flying_later_ids = {task.id for task in flying_later}
 
     if set(ordered_ids) != flying_later_ids or len(ordered_ids) != len(flying_later):
-        raise ValueError("orderedIds must contain all flying-later task IDs exactly once")
+        raise StaleOrderError("orderedIds must contain all flying-later task IDs exactly once")
 
     id_to_task = {task.id: task for task in flying_later}
     ordered = [id_to_task[task_id] for task_id in ordered_ids]

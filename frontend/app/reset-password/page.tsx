@@ -7,6 +7,7 @@ import { Suspense, useState } from "react";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { notify } from "@/components/ToastHost";
+import { friendlyErrorMessage } from "@/lib/errors";
 import { RESET_PASSWORD_MUTATION } from "@/lib/graphql/operations";
 
 function ResetPasswordContent() {
@@ -44,7 +45,7 @@ function ResetPasswordContent() {
       notify("Password updated. Sign in with your new password.");
       router.replace("/sign-in");
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Could not reset password");
+      notify(friendlyErrorMessage(error, "Could not reset password"));
     }
   };
 

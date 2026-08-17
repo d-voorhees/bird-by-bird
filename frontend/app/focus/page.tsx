@@ -15,6 +15,7 @@ import { BirdImage } from "@/components/BirdImage";
 import { EditableTaskContent } from "@/components/EditableTaskContent";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { notify } from "@/components/ToastHost";
+import { friendlyErrorMessage } from "@/lib/errors";
 import {
   COMPLETE_TASK_MUTATION,
   CURRENT_BIRD_QUERY,
@@ -121,7 +122,7 @@ function BirdScreen() {
       try {
         await action();
       } catch (error) {
-        notify(error instanceof Error ? error.message : "Something went wrong");
+        notify(friendlyErrorMessage(error, "Something went wrong"));
       } finally {
         window.setTimeout(() => setIsTransitioning(false), 180);
       }

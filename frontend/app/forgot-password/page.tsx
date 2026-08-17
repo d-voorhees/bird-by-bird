@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { AuthShell } from "@/components/AuthShell";
 import { notify } from "@/components/ToastHost";
+import { friendlyErrorMessage } from "@/lib/errors";
 import { REQUEST_PASSWORD_RESET_MUTATION } from "@/lib/graphql/operations";
 
 export default function ForgotPasswordPage() {
@@ -27,7 +28,7 @@ function ForgotPasswordForm() {
       await requestReset({ variables: { email } });
       setSent(true);
     } catch (error) {
-      notify(error instanceof Error ? error.message : "Could not send reset email");
+      notify(friendlyErrorMessage(error, "Could not send reset email"));
     }
   };
 
