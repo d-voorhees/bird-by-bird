@@ -41,8 +41,6 @@ Thumbs.db
 *.key
 fly.toml.backup
 
-# Editor config (may contain local machine paths)
-.cursor/
 
 # Developer logs (local only)
 LOG/
