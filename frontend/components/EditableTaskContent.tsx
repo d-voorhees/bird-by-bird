@@ -112,23 +112,25 @@ export function EditableTaskContent({
 
   const titleClass =
     variant === "hero"
-      ? "font-display text-3xl leading-tight sm:text-4xl md:text-5xl"
+      ? "font-display text-3xl leading-tight sm:text-4xl md:text-5xl [overflow-wrap:anywhere]"
       : completed
         ? "font-medium text-ink/75 line-through decoration-ink/25"
         : "font-medium text-ink";
 
   const titleEditClass =
     variant === "hero"
-      ? "font-display text-3xl sm:text-4xl md:text-5xl"
+      ? "font-display text-3xl sm:text-4xl md:text-5xl [overflow-wrap:anywhere]"
       : titleClass;
 
   const notesClass =
     variant === "hero"
-      ? "mt-2 text-sm leading-relaxed text-ink/55 sm:text-base"
+      ? "mt-2 text-sm leading-relaxed text-ink/55 sm:text-base [overflow-wrap:anywhere]"
       : "task-notes-field";
 
   const notesEditClass =
-    variant === "hero" ? "mt-2 text-sm text-ink/55 sm:text-base" : "task-notes-field";
+    variant === "hero"
+      ? "mt-2 text-sm text-ink/55 sm:text-base [overflow-wrap:anywhere]"
+      : "task-notes-field";
 
   const textAlign = align === "center" ? "text-center" : "text-left";
 

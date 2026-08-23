@@ -243,7 +243,7 @@ function BirdScreen() {
           </div>
         ) : displayTask ? (
           <div
-            className={`max-w-2xl text-center transition-opacity duration-[180ms] ${
+            className={`w-full max-w-2xl min-w-0 text-center transition-opacity duration-[180ms] ${
               isTransitioning ? "opacity-0" : "opacity-100"
             }`}
           >
