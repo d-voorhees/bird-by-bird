@@ -4,6 +4,15 @@ A running log of what changed and why.
 
 ---
 
+## v1.12 No duplicate birds among open tasks — August 22, 2026
+
+### Bird assignment now avoids birds already in use
+
+- `pick_bird_image()` (`backend/core/bird_assignment.py`) previously only avoided repeats within its own shuffled 22-image cycle, so a bird already sitting on a still-open task (active or flying-later) could get dealt out again to a new task before its cycle was exhausted.
+- It now also looks up every bird image currently attached to the user's active/flying-later tasks and filters both the current cycle and, if needed, a freshly reshuffled cycle to exclude them. A repeat is only ever handed out when all 22 images are already in use by other open tasks, at which point one is unavoidable.
+
+---
+
 ## v1.11 Stop leaking raw backend error text to users — August 16, 2026
 
 ### Stale reorder error
