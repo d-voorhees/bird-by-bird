@@ -23,6 +23,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ProtectedShell } from "@/components/AuthShell";
+import { ActiveDownloadMenu } from "@/components/ActiveDownloadMenu";
 import {
   AddTaskModal,
   openAddTaskModal,
@@ -40,6 +41,7 @@ import {
   FlockSecondaryButton,
   FlockSecondaryLink,
 } from "@/components/FlockSecondaryAction";
+import { historyActionsRowClass } from "@/components/historyActionsStyles";
 import { DragReorderButton, SquareCheckbox } from "@/components/SquareCheckbox";
 import { notify } from "@/components/ToastHost";
 import { friendlyErrorMessage } from "@/lib/errors";
@@ -436,7 +438,18 @@ function FlockScreen() {
               <h2 id="awaiting-flight-heading" className="font-display text-lg text-ink">
                 Awaiting flight
               </h2>
-              <SectionCountToggle count={awaitingTasks.length} label="Awaiting flight count" />
+              <div className={historyActionsRowClass}>
+                <ActiveDownloadMenu
+                  awaitingTasks={awaitingTasks}
+                  flyingLaterTasks={flyingLaterTasks}
+                />
+                <span className="text-ink/50" aria-hidden="true">
+                  ·
+                </span>
+                <span className="text-xs text-ink/45" aria-label="Awaiting flight count">
+                  {awaitingTasks.length}
+                </span>
+              </div>
             </div>
             {flockLoading && !flockData ? (
               <p className="text-sm text-ink/40">Loading…</p>

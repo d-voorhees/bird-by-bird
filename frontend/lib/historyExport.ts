@@ -6,7 +6,7 @@ function finishedLabel(task: Task): string {
   return formatCompletedAt(source);
 }
 
-function escapeCsvField(value: string): string {
+export function escapeCsvField(value: string): string {
   if (/[",\n\r]/.test(value)) {
     return `"${value.replace(/"/g, '""')}"`;
   }
