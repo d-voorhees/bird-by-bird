@@ -1,4 +1,4 @@
-import { formatCompletedAt, formatCsvDate, formatCsvTime } from "@/lib/format";
+import { formatCsvDate, formatCsvTime } from "@/lib/format";
 import { downloadTextFile, escapeCsvField } from "@/lib/historyExport";
 import type { Task } from "@/lib/types";
 
@@ -10,10 +10,6 @@ type ActiveSection = {
   tasks: Task[];
 };
 
-function addedLabel(task: Task): string {
-  return formatCompletedAt(task.createdAt);
-}
-
 function activeSections(awaitingTasks: Task[], flyingLaterTasks: Task[]): ActiveSection[] {
   return [
     { heading: "Current", label: "current", tasks: awaitingTasks },
@@ -21,19 +17,17 @@ function activeSections(awaitingTasks: Task[], flyingLaterTasks: Task[]): Active
   ];
 }
 
+function oneLineNote(task: Task): string {
+  return task.notes?.trim().replace(/\s+/g, " ") ?? "";
+}
+
 export function buildActiveMarkdown(awaitingTasks: Task[], flyingLaterTasks: Task[]): string {
   const lines: string[] = ["# Unfinished birds / tasks", ""];
 
   for (const section of activeSections(awaitingTasks, flyingLaterTasks)) {
-    if (section.tasks.length === 0) continue;
-    lines.push(`## ${section.heading}`, "");
     for (const task of section.tasks) {
-      lines.push(`### ${task.title}`);
-      if (task.notes?.trim()) {
-        lines.push(task.notes.trim());
-      }
-      lines.push(`Status: ${section.label}`);
-      lines.push(`Added: ${addedLabel(task)}`, "");
+      const note = oneLineNote(task);
+      lines.push(`- ${task.title}${note ? ` — ${note}` : ""} (${section.label})`);
     }
   }
 

@@ -4,6 +4,21 @@ A running log of what changed and why.
 
 ---
 
+## v1.13 Permanent awaiting-flight count, export active tasks — August 25, 2026
+
+### Awaiting flight count
+
+- The "Awaiting flight" section header (`app/flock/page.tsx`) previously hid its task count behind a "show count" toggle (`SectionCountToggle`), same as "Flying later". It now always shows the count as plain text — no click required. "Flying later" keeps the toggle.
+
+### Export active tasks
+
+- Added a "Download" menu next to the Awaiting flight count, matching the one on the history page: exports to `.md` or `.csv`.
+- Unlike the history export, this one covers both open lists together — Awaiting flight and Flying later — with each task tagged `current` or `later` (a `status` column in the CSV). The markdown format is deliberately flat, one line per task — `- Title — note (current)` — with no headers or grouping, so it pastes cleanly into other to-do tools.
+- New `lib/activeExport.ts` (`buildActiveMarkdown`, `buildActiveCsv`, `downloadActiveMarkdown`, `downloadActiveCsv`) and `components/ActiveDownloadMenu.tsx`, mirroring the existing `lib/historyExport.ts` / `components/HistoryDownloadMenu.tsx` pair; `escapeCsvField` in `historyExport.ts` is now exported so both modules share the same CSV escaping.
+- Header layout reuses `historyActionsRowClass` and the history page's bullet-separator pattern (label · count) instead of a one-off style.
+
+---
+
 ## v1.12 No duplicate birds among open tasks — August 22, 2026
 
 ### Bird assignment now avoids birds already in use
