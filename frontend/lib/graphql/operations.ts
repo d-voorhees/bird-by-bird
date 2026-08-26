@@ -7,6 +7,7 @@ export const ME_QUERY = gql`
       email
       emailVerified
       createdAt
+      customSectionName
     }
   }
 `;
@@ -42,6 +43,20 @@ export const FLOCK_QUERY = gql`
 export const FLYING_LATER_QUERY = gql`
   query FlyingLater {
     flyingLater {
+      id
+      title
+      notes
+      status
+      position
+      birdImage
+      createdAt
+    }
+  }
+`;
+
+export const CUSTOM_SECTION_QUERY = gql`
+  query CustomSection {
+    customSection {
       id
       title
       notes
@@ -174,6 +189,26 @@ export const REORDER_FLYING_LATER_TASKS_MUTATION = gql`
       title
       position
       status
+    }
+  }
+`;
+
+export const REORDER_CUSTOM_SECTION_TASKS_MUTATION = gql`
+  mutation ReorderCustomSectionTasks($orderedIds: [ID!]!) {
+    reorderCustomSectionTasks(orderedIds: $orderedIds) {
+      id
+      title
+      position
+      status
+    }
+  }
+`;
+
+export const SET_CUSTOM_SECTION_NAME_MUTATION = gql`
+  mutation SetCustomSectionName($name: String!) {
+    setCustomSectionName(name: $name) {
+      id
+      customSectionName
     }
   }
 `;

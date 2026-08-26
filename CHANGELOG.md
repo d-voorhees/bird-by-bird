@@ -4,6 +4,28 @@ A running log of what changed and why.
 
 ---
 
+## v1.14 Custom section — August 25, 2026
+
+### One user-named section, above Flying later
+
+- Users can now create a single custom section on the flock page, positioned between **Awaiting flight** and **Flying later**. Before it's named, a muted `+ Add additional section` link (same size/style as the section headings) sits where the section will go; clicking it opens a naming modal (new `components/AddSectionModal.tsx`, following `AddTaskModal`'s overlay/dialog pattern) and creates it.
+- Once named, the section behaves exactly like **Flying later** — count toggle, hide/show tasks (own `flock-custom-section-visible` localStorage key), and drag-and-drop in and out of it.
+- Tasks can now be dragged freely between all three lists — **Awaiting flight**, the custom section, and **Flying later** — in any direction.
+- Exporting active tasks (`lib/activeExport.ts`, `components/ActiveDownloadMenu.tsx`) now tags tasks from the custom section with the section's own name (exactly as typed) instead of forcing them into `current`/`later`.
+
+### Backend
+
+- New `TaskStatus.CUSTOM` status (`backend/core/models.py`) and a `custom_section_name` field on `User`, one section name per user.
+- New GraphQL query `customSection` and mutations `setCustomSectionName`, `reorderCustomSectionTasks` (`backend/core/schema.py`, `backend/core/task_service.py`), mirroring the existing `flyingLater`/`reorderFlyingLaterTasks` pair.
+- `completeTask`, `deleteTask`, and `setTaskStatus` now treat the custom status the same as active/flying-later, so tasks in the custom section can be completed, deleted, and moved like any other open task.
+
+### Frontend refactor
+
+- The drag-and-drop logic in `app/flock/page.tsx` was generalized from hardcoded two-list (awaiting/flying-later) branches to a small container-keyed config, so adding the third list didn't mean hand-duplicating every cross-list branch.
+- Extracted the section markup shared between Flying later and the custom section into `components/HoldingSection.tsx`, and the task row/drop-zone markup into `components/FlockTaskRow.tsx`.
+
+---
+
 ## v1.13 Permanent awaiting-flight count, export active tasks — August 25, 2026
 
 ### Awaiting flight count

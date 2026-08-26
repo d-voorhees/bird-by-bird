@@ -2,6 +2,7 @@ import type { ApolloCache } from "@apollo/client";
 
 import {
   CURRENT_BIRD_QUERY,
+  CUSTOM_SECTION_QUERY,
   FLOCK_QUERY,
   FLYING_LATER_QUERY,
   HISTORY_QUERY,
@@ -10,6 +11,7 @@ import type { Task } from "@/lib/types";
 
 type FlockData = { flock: Task[] };
 type FlyingLaterData = { flyingLater: Task[] };
+type CustomSectionData = { customSection: Task[] };
 type CurrentBirdData = { currentBird: Task | null };
 type HistoryData = { history: Task[] };
 
@@ -24,6 +26,13 @@ function removeFromFlyingLater(cache: ApolloCache, taskId: string) {
   cache.updateQuery<FlyingLaterData>({ query: FLYING_LATER_QUERY }, (data) => {
     if (!data) return data;
     return { flyingLater: data.flyingLater.filter((task) => task.id !== taskId) };
+  });
+}
+
+function removeFromCustomSection(cache: ApolloCache, taskId: string) {
+  cache.updateQuery<CustomSectionData>({ query: CUSTOM_SECTION_QUERY }, (data) => {
+    if (!data) return data;
+    return { customSection: data.customSection.filter((task) => task.id !== taskId) };
   });
 }
 
@@ -69,6 +78,7 @@ export function markTaskDoneInCache(
   };
   removeFromFlock(cache, task.id);
   removeFromFlyingLater(cache, task.id);
+  removeFromCustomSection(cache, task.id);
   setCurrentBirdFromFlockIfMatching(cache, task.id);
   for (const limit of historyLimits) {
     prependToHistory(cache, completedTask, limit);

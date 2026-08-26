@@ -2,7 +2,7 @@ export type Task = {
   id: string;
   title: string;
   notes?: string | null;
-  status: "ACTIVE" | "FLYING_LATER" | "DONE" | "ABANDONED";
+  status: "ACTIVE" | "FLYING_LATER" | "CUSTOM" | "DONE" | "ABANDONED";
   position: number;
   birdImage?: string | null;
   createdAt: string;
@@ -14,6 +14,7 @@ export type User = {
   email: string;
   emailVerified: boolean;
   createdAt: string;
+  customSectionName?: string | null;
 };
 
 export function groupTasksByDay(tasks: Task[]): { label: string; tasks: Task[] }[] {

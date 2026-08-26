@@ -2,7 +2,7 @@
 
 A single-task focus tool. One active task at a time, a deliberate backlog (the flock), and a history of what you finished.
 
-**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.11
+**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.14
 
 ---
 
@@ -99,7 +99,7 @@ pnpm exec tsc --noEmit
 
 ## GraphQL schema
 
-**Queries:** `me`, `currentBird`, `flock`, `flyingLater`, `history(limit, offset)`
+**Queries:** `me`, `currentBird`, `flock`, `flyingLater`, `customSection`, `history(limit, offset)`
 
 **Mutations:**
 
@@ -108,7 +108,13 @@ pnpm exec tsc --noEmit
 | Auth | `signUp`, `signIn`, `signOut` |
 | Email | `verifyEmail`, `resendVerificationEmail` |
 | Password | `requestPasswordReset`, `resetPassword` |
-| Tasks | `addTask`, `completeTask`, `uncompleteTask`, `skipTask`, `abandonTask`, `deleteTask`, `updateTask`, `reorderTasks`, `reorderFlyingLaterTasks`, `setTaskStatus`, `promoteTask`, `clearHistory` |
+| Tasks | `addTask`, `completeTask`, `uncompleteTask`, `skipTask`, `abandonTask`, `deleteTask`, `updateTask`, `reorderTasks`, `reorderFlyingLaterTasks`, `reorderCustomSectionTasks`, `setTaskStatus`, `setCustomSectionName`, `promoteTask`, `clearHistory` |
+
+## What's new in v1.14
+
+- Added a custom section: users can name one extra section on the flock page, positioned above **Flying later**, via a muted `+ Add additional section` link. It behaves exactly like **Flying later** (count toggle, hide/show, drag-and-drop), and tasks can now move freely between all three lists — **Awaiting flight**, the custom section, and **Flying later**.
+- Exporting active tasks now tags tasks from the custom section with the section's own name instead of `current`/`later`.
+- New backend `TaskStatus.CUSTOM` status, `User.custom_section_name` field, `customSection` query, and `setCustomSectionName`/`reorderCustomSectionTasks` mutations.
 
 ## What's new in v1.11
 

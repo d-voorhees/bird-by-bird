@@ -2,29 +2,48 @@ import { formatCsvDate, formatCsvTime } from "@/lib/format";
 import { downloadTextFile, escapeCsvField } from "@/lib/historyExport";
 import type { Task } from "@/lib/types";
 
-type ActiveLabel = "current" | "later";
-
 type ActiveSection = {
   heading: string;
-  label: ActiveLabel;
+  label: string;
   tasks: Task[];
 };
 
-function activeSections(awaitingTasks: Task[], flyingLaterTasks: Task[]): ActiveSection[] {
-  return [
+type CustomSection = {
+  name: string;
+  tasks: Task[];
+};
+
+function activeSections(
+  awaitingTasks: Task[],
+  flyingLaterTasks: Task[],
+  customSection?: CustomSection,
+): ActiveSection[] {
+  const sections: ActiveSection[] = [
     { heading: "Current", label: "current", tasks: awaitingTasks },
     { heading: "Flying later", label: "later", tasks: flyingLaterTasks },
   ];
+  if (customSection) {
+    sections.push({
+      heading: customSection.name,
+      label: customSection.name,
+      tasks: customSection.tasks,
+    });
+  }
+  return sections;
 }
 
 function oneLineNote(task: Task): string {
   return task.notes?.trim().replace(/\s+/g, " ") ?? "";
 }
 
-export function buildActiveMarkdown(awaitingTasks: Task[], flyingLaterTasks: Task[]): string {
+export function buildActiveMarkdown(
+  awaitingTasks: Task[],
+  flyingLaterTasks: Task[],
+  customSection?: CustomSection,
+): string {
   const lines: string[] = ["# Unfinished birds / tasks", ""];
 
-  for (const section of activeSections(awaitingTasks, flyingLaterTasks)) {
+  for (const section of activeSections(awaitingTasks, flyingLaterTasks, customSection)) {
     for (const task of section.tasks) {
       const note = oneLineNote(task);
       lines.push(`- ${task.title}${note ? ` — ${note}` : ""} (${section.label})`);
@@ -34,9 +53,13 @@ export function buildActiveMarkdown(awaitingTasks: Task[], flyingLaterTasks: Tas
   return `${lines.join("\n").trimEnd()}\n`;
 }
 
-export function buildActiveCsv(awaitingTasks: Task[], flyingLaterTasks: Task[]): string {
+export function buildActiveCsv(
+  awaitingTasks: Task[],
+  flyingLaterTasks: Task[],
+  customSection?: CustomSection,
+): string {
   const rows = [["status", "task", "notes", "date", "time"]];
-  for (const section of activeSections(awaitingTasks, flyingLaterTasks)) {
+  for (const section of activeSections(awaitingTasks, flyingLaterTasks, customSection)) {
     for (const task of section.tasks) {
       rows.push([
         section.label,
@@ -68,17 +91,25 @@ function activeTasksFilename(extension: "md" | "csv"): string {
   return `active-birds-${month}${day}${year}-${time}.${extension}`;
 }
 
-export function downloadActiveMarkdown(awaitingTasks: Task[], flyingLaterTasks: Task[]): void {
+export function downloadActiveMarkdown(
+  awaitingTasks: Task[],
+  flyingLaterTasks: Task[],
+  customSection?: CustomSection,
+): void {
   downloadTextFile(
-    buildActiveMarkdown(awaitingTasks, flyingLaterTasks),
+    buildActiveMarkdown(awaitingTasks, flyingLaterTasks, customSection),
     activeTasksFilename("md"),
     "text/markdown;charset=utf-8",
   );
 }
 
-export function downloadActiveCsv(awaitingTasks: Task[], flyingLaterTasks: Task[]): void {
+export function downloadActiveCsv(
+  awaitingTasks: Task[],
+  flyingLaterTasks: Task[],
+  customSection?: CustomSection,
+): void {
   downloadTextFile(
-    buildActiveCsv(awaitingTasks, flyingLaterTasks),
+    buildActiveCsv(awaitingTasks, flyingLaterTasks, customSection),
     activeTasksFilename("csv"),
     "text/csv;charset=utf-8",
   );

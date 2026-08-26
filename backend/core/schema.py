@@ -29,6 +29,7 @@ STALE_ORDER_MESSAGE = "Awakening from a slumber, one moment…"
 class TaskStatusEnum(graphene.Enum):
     ACTIVE = "active"
     FLYING_LATER = "flying_later"
+    CUSTOM = "custom"
     DONE = "done"
     ABANDONED = "abandoned"
 
@@ -38,12 +39,16 @@ class UserType(graphene.ObjectType):
     email = graphene.String(required=True)
     email_verified = graphene.Boolean(required=True)
     created_at = graphene.DateTime(required=True)
+    custom_section_name = graphene.String()
 
     def resolve_id(self, info: graphene.ResolveInfo) -> str:
         return str(self.id)
 
     def resolve_created_at(self, info: graphene.ResolveInfo):
         return self.created_at
+
+    def resolve_custom_section_name(self, info: graphene.ResolveInfo):
+        return self.custom_section_name
 
 
 class TaskType(graphene.ObjectType):
@@ -346,6 +351,42 @@ class ReorderFlyingLaterTasks(graphene.Mutation):
             raise GraphQLError(str(exc)) from exc
 
 
+class ReorderCustomSectionTasks(graphene.Mutation):
+    class Arguments:
+        ordered_ids = graphene.List(graphene.NonNull(graphene.ID), required=True)
+
+    Output = graphene.List(graphene.NonNull(TaskType))
+
+    def mutate(self, info: graphene.ResolveInfo, ordered_ids: list[str]) -> list[Task]:
+        user = _require_verified_user(info)
+        try:
+            from uuid import UUID
+
+            return task_service.reorder_custom_section_tasks(
+                user, [UUID(task_id) for task_id in ordered_ids]
+            )
+        except task_service.StaleOrderError as exc:
+            raise GraphQLError(
+                STALE_ORDER_MESSAGE, extensions={"code": STALE_ORDER_ERROR_CODE}
+            ) from exc
+        except ValueError as exc:
+            raise GraphQLError(str(exc)) from exc
+
+
+class SetCustomSectionName(graphene.Mutation):
+    class Arguments:
+        name = graphene.String(required=True)
+
+    Output = UserType
+
+    def mutate(self, info: graphene.ResolveInfo, name: str) -> User:
+        user = _require_verified_user(info)
+        try:
+            return task_service.set_custom_section_name(user, name)
+        except ValueError as exc:
+            raise GraphQLError(str(exc)) from exc
+
+
 class SetTaskStatus(graphene.Mutation):
     class Arguments:
         id = graphene.ID(required=True)
@@ -480,6 +521,7 @@ class Query(graphene.ObjectType):
     current_bird = graphene.Field(TaskType)
     flock = graphene.List(graphene.NonNull(TaskType), required=True)
     flying_later = graphene.List(graphene.NonNull(TaskType), required=True)
+    custom_section = graphene.List(graphene.NonNull(TaskType), required=True)
     history = graphene.List(
         graphene.NonNull(TaskType),
         required=True,
@@ -508,6 +550,10 @@ class Query(graphene.ObjectType):
         user = _require_verified_user(info)
         return Task.objects.filter(user=user, status=TaskStatus.FLYING_LATER).order_by("position")
 
+    def resolve_custom_section(self, info: graphene.ResolveInfo):
+        user = _require_verified_user(info)
+        return Task.objects.filter(user=user, status=TaskStatus.CUSTOM).order_by("position")
+
     def resolve_history(
         self,
         info: graphene.ResolveInfo,
@@ -534,6 +580,8 @@ class Mutation(graphene.ObjectType):
     update_task = UpdateTask.Field()
     reorder_tasks = ReorderTasks.Field()
     reorder_flying_later_tasks = ReorderFlyingLaterTasks.Field()
+    reorder_custom_section_tasks = ReorderCustomSectionTasks.Field()
+    set_custom_section_name = SetCustomSectionName.Field()
     set_task_status = SetTaskStatus.Field()
     promote_task = PromoteTask.Field()
     uncomplete_task = UncompleteTask.Field()

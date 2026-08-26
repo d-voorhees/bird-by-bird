@@ -81,8 +81,8 @@ def complete_task(user: User, task_id: UUID | str) -> Task:
     source_status = Task.objects.filter(id=task_id, user=user).values_list("status", flat=True).first()
     if source_status is None:
         raise Task.DoesNotExist()
-    if source_status not in {TaskStatus.ACTIVE, TaskStatus.FLYING_LATER}:
-        raise ValueError("Task is not active or flying later")
+    if source_status not in {TaskStatus.ACTIVE, TaskStatus.FLYING_LATER, TaskStatus.CUSTOM}:
+        raise ValueError("Task is not active, flying later, or in a custom section")
 
     # Lock every task in this status set in a single, id-ordered query so
     # concurrent completions never acquire the same two row locks in reverse
@@ -150,7 +150,7 @@ def delete_task(user: User, task_id: UUID | str) -> bool:
     task = Task.objects.select_for_update().get(id=task_id, user=user)
     status = task.status
     task.delete()
-    if status in {TaskStatus.ACTIVE, TaskStatus.FLYING_LATER}:
+    if status in {TaskStatus.ACTIVE, TaskStatus.FLYING_LATER, TaskStatus.CUSTOM}:
         remaining = list(_tasks_for_status(user, status).select_for_update())
         if remaining:
             _normalize_positions(user, remaining)
@@ -214,14 +214,40 @@ def reorder_flying_later_tasks(user: User, ordered_ids: list[UUID]) -> list[Task
 
 
 @transaction.atomic
+def reorder_custom_section_tasks(user: User, ordered_ids: list[UUID]) -> list[Task]:
+    custom = list(_tasks_for_status(user, TaskStatus.CUSTOM).select_for_update())
+    custom_ids = {task.id for task in custom}
+
+    if set(ordered_ids) != custom_ids or len(ordered_ids) != len(custom):
+        raise StaleOrderError("orderedIds must contain all custom-section task IDs exactly once")
+
+    id_to_task = {task.id: task for task in custom}
+    ordered = [id_to_task[task_id] for task_id in ordered_ids]
+    return _normalize_positions(user, ordered)
+
+
+@transaction.atomic
+def set_custom_section_name(user: User, name: str) -> User:
+    trimmed = name.strip()
+    if not trimmed:
+        raise ValueError("Section name cannot be empty")
+    if len(trimmed) > 60:
+        raise ValueError("Section name must be 60 characters or fewer")
+
+    user.custom_section_name = trimmed
+    user.save(update_fields=["custom_section_name"])
+    return user
+
+
+@transaction.atomic
 def set_task_status(user: User, task_id: UUID | str, status: TaskStatus) -> Task:
     task = Task.objects.select_for_update().get(id=task_id, user=user)
     if task.status == status:
         return task
 
-    allowed_statuses = {TaskStatus.ACTIVE, TaskStatus.FLYING_LATER}
+    allowed_statuses = {TaskStatus.ACTIVE, TaskStatus.FLYING_LATER, TaskStatus.CUSTOM}
     if task.status not in allowed_statuses or status not in allowed_statuses:
-        raise ValueError("Task status can only be moved between active and flying later")
+        raise ValueError("Task status can only be moved between active, flying later, and custom")
 
     source_status = task.status
     task.status = status

@@ -17,9 +17,20 @@ import {
 type ActiveDownloadMenuProps = {
   awaitingTasks: Task[];
   flyingLaterTasks: Task[];
+  customSectionName?: string | null;
+  customSectionTasks?: Task[];
 };
 
-export function ActiveDownloadMenu({ awaitingTasks, flyingLaterTasks }: ActiveDownloadMenuProps) {
+export function ActiveDownloadMenu({
+  awaitingTasks,
+  flyingLaterTasks,
+  customSectionName,
+  customSectionTasks,
+}: ActiveDownloadMenuProps) {
+  const customSection =
+    customSectionName && customSectionTasks
+      ? { name: customSectionName, tasks: customSectionTasks }
+      : undefined;
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -48,9 +59,9 @@ export function ActiveDownloadMenu({ awaitingTasks, flyingLaterTasks }: ActiveDo
 
   const handleDownload = (format: "md" | "csv") => {
     if (format === "md") {
-      downloadActiveMarkdown(awaitingTasks, flyingLaterTasks);
+      downloadActiveMarkdown(awaitingTasks, flyingLaterTasks, customSection);
     } else {
-      downloadActiveCsv(awaitingTasks, flyingLaterTasks);
+      downloadActiveCsv(awaitingTasks, flyingLaterTasks, customSection);
     }
     setOpen(false);
   };

@@ -12,6 +12,7 @@ class User(models.Model):
     email_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     bird_assignment_pool = models.JSONField(default=list, blank=True)
+    custom_section_name = models.CharField(max_length=60, null=True, blank=True)
 
     class Meta:
         db_table = "users"
@@ -29,6 +30,7 @@ class User(models.Model):
 class TaskStatus(models.TextChoices):
     ACTIVE = "active", "Active"
     FLYING_LATER = "flying_later", "Flying Later"
+    CUSTOM = "custom", "Custom"
     DONE = "done", "Done"
     ABANDONED = "abandoned", "Abandoned"
 
