@@ -93,28 +93,37 @@ export function HoldingSection({
             <p className="px-0 py-1 text-left text-sm text-ink/40">{emptyMessage}</p>
           </TaskListDropZone>
         </div>
-      ) : !show ? null : (
-        <FlockListFooter
-          list={
-            <div className="flock-list space-y-2">
-              <TaskListDropZone id={containerId}>
-                <SortableContext
-                  items={tasks.map((task) => task.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {tasks.map((task) => (
-                    <TaskRow key={task.id} task={task} captionLabel={rowCaption} onEdit={onEdit} />
-                  ))}
-                </SortableContext>
-              </TaskListDropZone>
-            </div>
-          }
-          action={
-            <FlockSecondaryButton onClick={() => onShowChange(false)}>
-              hide tasks
-            </FlockSecondaryButton>
-          }
-        />
+      ) : (
+        <div
+          aria-hidden={!show}
+          className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+            show ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
+        >
+          <div className="overflow-hidden">
+            <FlockListFooter
+              list={
+                <div className="flock-list space-y-2">
+                  <TaskListDropZone id={containerId}>
+                    <SortableContext
+                      items={tasks.map((task) => task.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {tasks.map((task) => (
+                        <TaskRow key={task.id} task={task} captionLabel={rowCaption} onEdit={onEdit} />
+                      ))}
+                    </SortableContext>
+                  </TaskListDropZone>
+                </div>
+              }
+              action={
+                <FlockSecondaryButton onClick={() => onShowChange(false)}>
+                  hide tasks
+                </FlockSecondaryButton>
+              }
+            />
+          </div>
+        </div>
       )}
     </section>
   );

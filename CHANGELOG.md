@@ -10,6 +10,9 @@ A running log of what changed and why.
 
 - Dragging a task down onto a collapsed **Flying later** or custom section used to unhide it (and drop the task in) the instant the drag touched it — easy to trigger by accident while passing over the header on the way somewhere else.
 - The collapsed section now only opens if the drag hovers near its title for 2 seconds (`SECTION_OPEN_HOVER_DELAY_MS` in `app/flock/page.tsx`); leaving before the timer fires cancels it and the task stays put. `components/HoldingSection.tsx`'s collapsed-state drop zone now wraps the whole header (title + "show tasks" link), not just the link, so hovering the title itself counts.
+- Drag-over hover feedback (`TaskListDropZone` in `components/FlockTaskRow.tsx`) is now a lifted drop shadow with a light backdrop blur instead of a ring border, reading more like something hovering above the drop target than an outline.
+- Opening or closing a section's task list — via the "show tasks"/"hide tasks" links or the drag hover-delay above — now animates smoothly (a CSS grid-rows transition in `HoldingSection.tsx`) instead of snapping instantly.
+- When the hover delay opens a section, the dragged task is inserted at the top of its list rather than wherever the generic drop position would land it, so it's immediately visible right where the section just opened instead of seeming to vanish.
 
 ---
 

@@ -234,7 +234,13 @@ function FlockScreen() {
   );
 
   const moveTaskAcrossLists = useCallback(
-    (activeId: string, overId: string, targetKey: ContainerKey, current: TaskLists): TaskLists | null => {
+    (
+      activeId: string,
+      overId: string,
+      targetKey: ContainerKey,
+      current: TaskLists,
+      insertIndexOverride?: number,
+    ): TaskLists | null => {
       const sourceKey = CONTAINER_KEYS.find((key) => current[key].some((task) => task.id === activeId));
       if (!sourceKey || sourceKey === targetKey) return null;
 
@@ -248,7 +254,8 @@ function FlockScreen() {
         overId === CONTAINER_IDS[targetKey] || overId === COLLAPSED_CONTAINER_IDS[targetKey]
           ? targetBaseList.length
           : targetBaseList.findIndex((task) => task.id === overId);
-      const insertIndex = destinationIndex < 0 ? targetBaseList.length : destinationIndex;
+      const insertIndex =
+        insertIndexOverride ?? (destinationIndex < 0 ? targetBaseList.length : destinationIndex);
       const updatedTarget = [...targetBaseList];
       updatedTarget.splice(insertIndex, 0, { ...movedTask, status: STATUS_BY_KEY[targetKey] });
 
@@ -439,7 +446,9 @@ function FlockScreen() {
           const timer = setTimeout(() => {
             if (targetKey === "flyingLater") setShowFlyingLater(true);
             if (targetKey === "custom") setShowCustomSection(true);
-            const moved = moveTaskAcrossLists(activeId, overId, targetKey, listsRef.current);
+            // Insert at the top, not wherever the generic drop logic would place
+            // it, so it's immediately visible right as the section opens.
+            const moved = moveTaskAcrossLists(activeId, overId, targetKey, listsRef.current, 0);
             if (moved) applyLists(moved);
             hoverOpenRef.current = null;
           }, SECTION_OPEN_HOVER_DELAY_MS);

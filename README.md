@@ -177,6 +177,7 @@ Backend environment variables (secret keys, database URL, SMTP credentials) are 
 **v1.16 — Hover delay before a collapsed section opens on drag**
 
 - Dragging a task onto a collapsed **Flying later** or custom section no longer opens it instantly — it now opens (and drops the task in) only after the drag hovers near the section's title for 2 seconds, so passing over the header on the way elsewhere doesn't pop it open by accident.
+- Drag hover now shows as a lifted drop shadow with a light blur instead of a border outline; opening/closing a section's list (by hand or via the hover delay) animates smoothly instead of snapping instantly; and the task that triggered the auto-open lands at the top of the list so it's clearly visible right where the section opened.
 
 Full version history, including prior reliability fixes and UI changes by release: see [CHANGELOG.md](CHANGELOG.md).
 

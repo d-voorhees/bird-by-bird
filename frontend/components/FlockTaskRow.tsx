@@ -26,7 +26,12 @@ import type { Task } from "@/lib/types";
 export function TaskListDropZone({ id, children }: { id: string; children: React.ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   return (
-    <div ref={setNodeRef} className={isOver ? "rounded-lg ring-1 ring-accent/40" : undefined}>
+    <div
+      ref={setNodeRef}
+      className={`rounded-lg transition-shadow duration-150 ${
+        isOver ? "shadow-[0_16px_32px_-12px] shadow-accent/50 backdrop-blur-[2px]" : ""
+      }`}
+    >
       {children}
     </div>
   );
