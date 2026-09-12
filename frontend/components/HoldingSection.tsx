@@ -57,14 +57,31 @@ export function HoldingSection({
   onShowChange,
   onEdit,
 }: HoldingSectionProps) {
+  const header = (
+    <div className="mb-4 flex items-baseline justify-between">
+      <h2 id={headingId} className="font-display text-lg text-ink">
+        {heading}
+      </h2>
+      <SectionCountToggle count={tasks.length} label={countLabel} />
+    </div>
+  );
+
   return (
     <section aria-labelledby={headingId}>
-      <div className="mb-4 flex items-baseline justify-between">
-        <h2 id={headingId} className="font-display text-lg text-ink">
-          {heading}
-        </h2>
-        <SectionCountToggle count={tasks.length} label={countLabel} />
-      </div>
+      {tasks.length > 0 && !show ? (
+        <TaskListDropZone id={collapsedContainerId}>
+          {header}
+          <button
+            type="button"
+            onClick={() => onShowChange(true)}
+            className="text-xs text-ink/55 underline-offset-2 hover:text-ink hover:underline"
+          >
+            show tasks
+          </button>
+        </TaskListDropZone>
+      ) : (
+        header
+      )}
 
       {loading && !hasData ? (
         <p className="text-sm text-ink/40">Loading…</p>
@@ -99,17 +116,6 @@ export function HoldingSection({
           }
         />
       )}
-      {tasks.length > 0 && !show ? (
-        <TaskListDropZone id={collapsedContainerId}>
-          <button
-            type="button"
-            onClick={() => onShowChange(true)}
-            className="text-xs text-ink/55 underline-offset-2 hover:text-ink hover:underline"
-          >
-            show tasks
-          </button>
-        </TaskListDropZone>
-      ) : null}
     </section>
   );
 }

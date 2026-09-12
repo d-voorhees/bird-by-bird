@@ -2,7 +2,7 @@
 
 Bird by Bird is a deployed full-stack task-focus application built to turn a deliberately constrained productivity workflow into a reliable web product. It combines a Next.js and TypeScript client with a Django GraphQL API, PostgreSQL persistence, JWT authentication in HTTP-only cookies, and separate Vercel and Fly.io deployments; the application supports task prioritization, cross-list reordering, completion history, and exportable task records.
 
-**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.15
+**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.16
 
 ---
 
@@ -174,10 +174,9 @@ Backend environment variables (secret keys, database URL, SMTP credentials) are 
 
 ## Current release
 
-**v1.15 — Paste multiple tasks, longer task text**
+**v1.16 — Hover delay before a collapsed section opens on drag**
 
-- Pasting multi-line text into the task field on Focus or Flock now prompts to create one task per line instead of one task with the whole paste; declining keeps it as a single task with line breaks intact.
-- Tripled the per-task character limit (280 → 840) and switched the title field to an auto-growing textarea so multi-line titles display and edit properly.
+- Dragging a task onto a collapsed **Flying later** or custom section no longer opens it instantly — it now opens (and drops the task in) only after the drag hovers near the section's title for 2 seconds, so passing over the header on the way elsewhere doesn't pop it open by accident.
 
 Full version history, including prior reliability fixes and UI changes by release: see [CHANGELOG.md](CHANGELOG.md).
 

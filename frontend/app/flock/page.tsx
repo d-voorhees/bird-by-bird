@@ -83,6 +83,8 @@ const STATUS_BY_KEY: Record<ContainerKey, Task["status"]> = {
 
 const CONTAINER_KEYS = Object.keys(CONTAINER_IDS) as ContainerKey[];
 
+const SECTION_OPEN_HOVER_DELAY_MS = 2000;
+
 type TaskLists = Record<ContainerKey, Task[]>;
 
 function FlockScreen() {
@@ -134,6 +136,7 @@ function FlockScreen() {
   const initializedToggleRef = useRef(false);
   const dragStartContainerRef = useRef<ContainerKey | null>(null);
   const listsRef = useRef<TaskLists>(lists);
+  const hoverOpenRef = useRef<{ overId: string; timer: ReturnType<typeof setTimeout> } | null>(null);
 
   const dedupeLists = useCallback((next: TaskLists): TaskLists => {
     const seen = new Set<string>();
@@ -258,8 +261,18 @@ function FlockScreen() {
     [],
   );
 
+  const clearHoverOpenTimer = useCallback(() => {
+    if (hoverOpenRef.current) {
+      clearTimeout(hoverOpenRef.current.timer);
+      hoverOpenRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => clearHoverOpenTimer, [clearHoverOpenTimer]);
+
   const handleDragEnd = useCallback(
     async (event: DragEndEvent) => {
+      clearHoverOpenTimer();
       const { active, over } = event;
       const activeId = String(active.id);
       const sourceKey = dragStartContainerRef.current ?? getContainerKey(activeId);
@@ -386,6 +399,7 @@ function FlockScreen() {
       reorderCustomSectionTasks,
       reorderTasks,
       setTaskStatus,
+      clearHoverOpenTimer,
     ],
   );
 
@@ -399,31 +413,63 @@ function FlockScreen() {
   const handleDragOver = useCallback(
     (event: DragOverEvent) => {
       const { active, over } = event;
-      if (!over) return;
+      if (!over) {
+        clearHoverOpenTimer();
+        return;
+      }
 
       const activeId = String(active.id);
       const overId = String(over.id);
       const targetKey = getContainerKey(overId);
-      if (!targetKey) return;
-      if (targetKey === "flyingLater" && !showFlyingLater) {
-        setShowFlyingLater(true);
+      if (!targetKey) {
+        clearHoverOpenTimer();
+        return;
       }
-      if (targetKey === "custom" && !showCustomSection) {
-        setShowCustomSection(true);
+
+      const isCollapsedTarget =
+        (targetKey === "flyingLater" && !showFlyingLater) ||
+        (targetKey === "custom" && !showCustomSection);
+
+      if (isCollapsedTarget) {
+        // Only open a collapsed section (and drop the task into it) after the
+        // dragged task has hovered near its title for a beat, so a task just
+        // passing over the header on its way elsewhere doesn't pop it open.
+        if (hoverOpenRef.current?.overId !== overId) {
+          clearHoverOpenTimer();
+          const timer = setTimeout(() => {
+            if (targetKey === "flyingLater") setShowFlyingLater(true);
+            if (targetKey === "custom") setShowCustomSection(true);
+            const moved = moveTaskAcrossLists(activeId, overId, targetKey, listsRef.current);
+            if (moved) applyLists(moved);
+            hoverOpenRef.current = null;
+          }, SECTION_OPEN_HOVER_DELAY_MS);
+          hoverOpenRef.current = { overId, timer };
+        }
+        return;
       }
+
+      clearHoverOpenTimer();
 
       const next = moveTaskAcrossLists(activeId, overId, targetKey, listsRef.current);
       if (!next) return;
 
       applyLists(next);
     },
-    [getContainerKey, moveTaskAcrossLists, showFlyingLater, showCustomSection, applyLists],
+    [
+      getContainerKey,
+      moveTaskAcrossLists,
+      showFlyingLater,
+      showCustomSection,
+      applyLists,
+      clearHoverOpenTimer,
+    ],
   );
 
   const handleDragCancel = useCallback(() => {
+    clearHoverOpenTimer();
     dragStartContainerRef.current = null;
     applyLists(serverLists);
-  }, [serverLists, applyLists]);
+  }, [serverLists, applyLists, clearHoverOpenTimer]);
 
   const awaitingTasks = lists.awaiting;
   const flyingLaterTasks = lists.flyingLater;

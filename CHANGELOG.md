@@ -4,6 +4,15 @@ A running log of what changed and why.
 
 ---
 
+## v1.16 Hover delay before a collapsed section opens on drag — September 12, 2026
+
+### Flying later / custom section
+
+- Dragging a task down onto a collapsed **Flying later** or custom section used to unhide it (and drop the task in) the instant the drag touched it — easy to trigger by accident while passing over the header on the way somewhere else.
+- The collapsed section now only opens if the drag hovers near its title for 2 seconds (`SECTION_OPEN_HOVER_DELAY_MS` in `app/flock/page.tsx`); leaving before the timer fires cancels it and the task stays put. `components/HoldingSection.tsx`'s collapsed-state drop zone now wraps the whole header (title + "show tasks" link), not just the link, so hovering the title itself counts.
+
+---
+
 ## v1.15 Paste multiple tasks, longer task text — September 12, 2026
 
 ### Paste-to-create on Focus and Flock
