@@ -292,10 +292,31 @@ function FlockScreen() {
 
       const overId = String(over.id);
       const targetKey = getContainerKey(overId);
-      const finalKey = getContainerKey(activeId);
-      if (!sourceKey || !targetKey || !finalKey) return;
+      if (!sourceKey || !targetKey) return;
 
-      const sourceList = listsRef.current[sourceKey];
+      let nextLists = listsRef.current;
+      let finalKey = getContainerKey(activeId);
+
+      // A drop always commits, even onto a still-collapsed section whose 2s
+      // hover delay hasn't elapsed yet — the delay only gates auto-opening
+      // while the drag is still in progress, not the drop itself.
+      const isCollapsedTarget =
+        (targetKey === "flyingLater" && !showFlyingLater) ||
+        (targetKey === "custom" && !showCustomSection);
+      if (isCollapsedTarget && finalKey !== targetKey) {
+        if (targetKey === "flyingLater") setShowFlyingLater(true);
+        if (targetKey === "custom") setShowCustomSection(true);
+        const moved = moveTaskAcrossLists(activeId, overId, targetKey, nextLists, 0);
+        if (moved) {
+          applyLists(moved);
+          nextLists = moved;
+          finalKey = targetKey;
+        }
+      }
+
+      if (!finalKey) return;
+
+      const sourceList = nextLists[sourceKey];
 
       if (sourceKey === finalKey && targetKey === finalKey) {
         const sourceIndex = sourceList.findIndex((task) => task.id === activeId);
@@ -310,7 +331,7 @@ function FlockScreen() {
         const reordered = arrayMove(sourceList, oldIndex, newIndex);
         const orderedIds = reordered.map((task) => task.id);
 
-        applyLists({ ...listsRef.current, [sourceKey]: reordered });
+        applyLists({ ...nextLists, [sourceKey]: reordered });
 
         try {
           if (sourceKey === "awaiting") {
@@ -346,7 +367,6 @@ function FlockScreen() {
         return;
       }
 
-      const nextLists = listsRef.current;
       const movedTask = nextLists[finalKey].find((task) => task.id === activeId);
       if (!movedTask) return;
 
@@ -407,6 +427,9 @@ function FlockScreen() {
       reorderTasks,
       setTaskStatus,
       clearHoverOpenTimer,
+      moveTaskAcrossLists,
+      showFlyingLater,
+      showCustomSection,
     ],
   );
 
