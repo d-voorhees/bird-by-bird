@@ -20,6 +20,8 @@ import {
 import { addTaskInCache } from "@/lib/taskCache";
 import type { Task } from "@/lib/types";
 
+const TITLE_MAX_LENGTH = 840;
+
 type AddTaskModalProps = {
   open: boolean;
   onClose: () => void;
@@ -39,13 +41,24 @@ export function openAddTaskModal(
   modalRef.current?.focusTitle();
 }
 
+function splitPastedLines(text: string): string[] {
+  return text
+    .split(/\r\n|\r|\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
 export const AddTaskModal = forwardRef<AddTaskModalHandle, AddTaskModalProps>(
   function AddTaskModal({ open, onClose, focusNewTask = false, onAdded }, ref) {
-    const titleRef = useRef<HTMLInputElement>(null);
+    const titleRef = useRef<HTMLTextAreaElement>(null);
+    const pasteSelectionRef = useRef<{ start: number; end: number } | null>(null);
     const [title, setTitle] = useState("");
     const [notes, setNotes] = useState("");
     const [showNotes, setShowNotes] = useState(false);
     const [doNext, setDoNext] = useState(false);
+    const [pasteLines, setPasteLines] = useState<string[] | null>(null);
+    const [pasteRawText, setPasteRawText] = useState("");
+    const [creatingBulk, setCreatingBulk] = useState(false);
 
     const [addTask, { loading }] = useMutation<{ addTask: Task }>(ADD_TASK_MUTATION);
 
@@ -54,6 +67,9 @@ export const AddTaskModal = forwardRef<AddTaskModalHandle, AddTaskModalProps>(
       setNotes("");
       setShowNotes(false);
       setDoNext(false);
+      setPasteLines(null);
+      setPasteRawText("");
+      setCreatingBulk(false);
     }, []);
 
     const handleClose = useCallback(() => {
@@ -90,6 +106,69 @@ export const AddTaskModal = forwardRef<AddTaskModalHandle, AddTaskModalProps>(
       window.addEventListener("keydown", onKeyDown);
       return () => window.removeEventListener("keydown", onKeyDown);
     }, [open, handleClose]);
+
+    useEffect(() => {
+      const textarea = titleRef.current;
+      if (!textarea) return;
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }, [title, pasteLines]);
+
+    const handleTitlePaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      const text = event.clipboardData.getData("text");
+      const lines = splitPastedLines(text);
+      if (lines.length > 1) {
+        event.preventDefault();
+        const textarea = event.currentTarget;
+        pasteSelectionRef.current = {
+          start: textarea.selectionStart,
+          end: textarea.selectionEnd,
+        };
+        setPasteRawText(text);
+        setPasteLines(lines);
+      }
+    };
+
+    const handleBulkDecline = () => {
+      const selection = pasteSelectionRef.current ?? {
+        start: title.length,
+        end: title.length,
+      };
+      const nextTitle = (
+        title.slice(0, selection.start) + pasteRawText + title.slice(selection.end)
+      ).slice(0, TITLE_MAX_LENGTH);
+      setTitle(nextTitle);
+      setPasteLines(null);
+      setPasteRawText("");
+      requestAnimationFrame(() => titleRef.current?.focus());
+    };
+
+    const handleBulkConfirm = async () => {
+      if (!pasteLines) return;
+      setCreatingBulk(true);
+      try {
+        for (const line of pasteLines) {
+          await addTask({
+            variables: {
+              title: line.slice(0, TITLE_MAX_LENGTH),
+              notes: null,
+              doNext: false,
+            },
+            update(cache, mutationResult) {
+              const newTask = mutationResult.data?.addTask;
+              if (!newTask) return;
+              addTaskInCache(cache, newTask, false);
+            },
+          });
+        }
+        notify(`Added ${pasteLines.length} tasks`);
+        handleClose();
+      } catch (error) {
+        notify(friendlyErrorMessage(error, "Could not add tasks"));
+      } finally {
+        setCreatingBulk(false);
+      }
+    };
 
     const handleSubmit = async (event: React.FormEvent) => {
       event.preventDefault();
@@ -137,19 +216,51 @@ export const AddTaskModal = forwardRef<AddTaskModalHandle, AddTaskModalProps>(
             Add task
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              ref={titleRef}
-              type="text"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="What needs doing?"
-              maxLength={280}
-              enterKeyHint="done"
-              className="w-full border-b border-stone/30 bg-transparent py-2 text-lg text-ink outline-none placeholder:text-ink/35 focus:border-accent"
-              aria-label="Task title"
-            />
+            {pasteLines ? (
+              <div className="space-y-3 rounded-md border border-accent/40 bg-accent/5 px-3 py-3">
+                <p className="text-sm text-ink/80">
+                  Create {pasteLines.length} separate tasks from this paste?
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={handleBulkDecline}
+                    className="rounded-md px-3 py-1.5 text-sm text-ink/60 transition hover:text-ink"
+                  >
+                    No, keep as one task
+                  </button>
+                  <button
+                    type="button"
+                    disabled={creatingBulk}
+                    onClick={() => void handleBulkConfirm()}
+                    className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-accent-fg transition hover:bg-accent/90 disabled:opacity-50"
+                  >
+                    {creatingBulk ? "Adding…" : `Yes, add ${pasteLines.length} tasks`}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <textarea
+                ref={titleRef}
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                onPaste={handleTitlePaste}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    event.currentTarget.form?.requestSubmit();
+                  }
+                }}
+                placeholder="What needs doing?"
+                maxLength={TITLE_MAX_LENGTH}
+                rows={1}
+                enterKeyHint="done"
+                className="w-full resize-none overflow-hidden border-b border-stone/30 bg-transparent py-2 text-lg text-ink outline-none placeholder:text-ink/35 focus:border-accent"
+                aria-label="Task title"
+              />
+            )}
 
-            {!showNotes ? (
+            {pasteLines ? null : !showNotes ? (
               <button
                 type="button"
                 onClick={() => setShowNotes(true)}
@@ -168,7 +279,7 @@ export const AddTaskModal = forwardRef<AddTaskModalHandle, AddTaskModalProps>(
               />
             )}
 
-            {!focusNewTask ? (
+            {pasteLines || focusNewTask ? null : (
               <label className="flex items-center gap-2 text-sm text-ink/70">
                 <input
                   type="checkbox"
@@ -178,24 +289,26 @@ export const AddTaskModal = forwardRef<AddTaskModalHandle, AddTaskModalProps>(
                 />
                 Do this next
               </label>
-            ) : null}
+            )}
 
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={handleClose}
-                className="rounded-md px-4 py-2 text-sm text-ink/60 transition hover:text-ink"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading || !title.trim()}
-                className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg transition hover:bg-accent/90 disabled:opacity-50"
-              >
-                {loading ? "Adding…" : "Add"}
-              </button>
-            </div>
+            {pasteLines ? null : (
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="rounded-md px-4 py-2 text-sm text-ink/60 transition hover:text-ink"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || !title.trim()}
+                  className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg transition hover:bg-accent/90 disabled:opacity-50"
+                >
+                  {loading ? "Adding…" : "Add"}
+                </button>
+              </div>
+            )}
           </form>
         </div>
       </div>

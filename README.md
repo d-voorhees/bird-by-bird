@@ -1,22 +1,36 @@
 # Bird by Bird
 
-A single-task focus tool. One active task at a time, a deliberate backlog (the flock), and a history of what you finished.
+Bird by Bird is a deployed full-stack task-focus application built to turn a deliberately constrained productivity workflow into a reliable web product. It combines a Next.js and TypeScript client with a Django GraphQL API, PostgreSQL persistence, JWT authentication in HTTP-only cookies, and separate Vercel and Fly.io deployments; the application supports task prioritization, cross-list reordering, completion history, and exportable task records.
 
-**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.14
+**Live:** [bird-by-bird.vercel.app](https://bird-by-bird.vercel.app) &nbsp;·&nbsp; **Current release:** v1.15
 
 ---
+
+## Business problem and workflow
+
+The app is built around one active task at a time rather than an open-ended list. Work is organized into three lists on the flock page:
+
+- **Awaiting flight** — the active queue, in manual priority order
+- An optional **custom section** — one user-named section for a second grouping
+- **Flying later** — deferred work, excluded from the active count until moved back
+
+Tasks can be dragged freely between all three lists. Completing one moves it into history (**This bird has flown**), which can be reviewed by day, exported, or cleared.
+
+The project intentionally excludes tags, projects, due dates, reminders, sharing, and streaks — see [Out of scope](#out-of-scope).
 
 ## Stack
 
 | Layer | Choice |
 |-------|--------|
-| Frontend | Next.js 15 + TypeScript + Tailwind |
+| Frontend | Next.js 14 + TypeScript + Tailwind |
 | API | Django 5 + Graphene GraphQL |
 | Database | PostgreSQL |
 | Auth | JWT in HTTP-only cookies + sessions table |
 | Package mgmt | pnpm (frontend), uv (backend) |
 
-## Architecture
+## Architecture and request flow
+
+The Next.js client (Vercel) sends every request to the Django GraphQL API (Fly.io) with credentials included, so the browser's HTTP-only session cookie goes along automatically — there's no token handling in client JS. The API verifies the signed JWT from that cookie and checks it against a matching session row in PostgreSQL (also on Fly.io), so a session can be checked for expiry or invalidated server-side rather than trusting the token alone. PostgreSQL is the system of record for users, tasks, and sessions; the API reads and writes through Django's ORM.
 
 ```
 ┌─────────────────┐    HTTP-only JWT cookie    ┌──────────────────┐
@@ -97,7 +111,15 @@ pnpm lint
 pnpm exec tsc --noEmit
 ```
 
-## GraphQL schema
+## Validation and quality checks
+
+- **Backend:** `uv run pytest -v` runs the GraphQL integration suite (`backend/core/tests/test_graphql.py`, 24 tests) covering sign-up/email verification/password reset, task creation and completion (including completing from Flying later), skip/abandon/promote, reordering within and across lists, history pagination, the auth-required guard on protected queries, and bird-image cycling.
+- **Frontend:** `pnpm lint` (ESLint via `next lint`) and `pnpm exec tsc --noEmit` check the client.
+- These checks are run locally as part of development; this repository has no `.github/workflows` or other CI configuration, so they are not run automatically on push.
+
+## API contract
+
+The Django backend exposes a single GraphQL endpoint (`/graphql/`) covering auth, task lifecycle, and history — the same contract the Next.js client consumes.
 
 **Queries:** `me`, `currentBird`, `flock`, `flyingLater`, `customSection`, `history(limit, offset)`
 
@@ -110,71 +132,19 @@ pnpm exec tsc --noEmit
 | Password | `requestPasswordReset`, `resetPassword` |
 | Tasks | `addTask`, `completeTask`, `uncompleteTask`, `skipTask`, `abandonTask`, `deleteTask`, `updateTask`, `reorderTasks`, `reorderFlyingLaterTasks`, `reorderCustomSectionTasks`, `setTaskStatus`, `setCustomSectionName`, `promoteTask`, `clearHistory` |
 
-## What's new in v1.14
+## Data model
 
-- Added a custom section: users can name one extra section on the flock page, positioned above **Flying later**, via a muted `+ Add additional section` link. It behaves exactly like **Flying later** (count toggle, hide/show, drag-and-drop), and tasks can now move freely between all three lists — **Awaiting flight**, the custom section, and **Flying later**.
-- Exporting active tasks now tags tasks from the custom section with the section's own name instead of `current`/`later`.
-- New backend `TaskStatus.CUSTOM` status, `User.custom_section_name` field, `customSection` query, and `setCustomSectionName`/`reorderCustomSectionTasks` mutations.
+The schema stays small and purpose-built: `users`, `tasks`, and `sessions` are the core tables, plus `email_verification_tokens` and `password_reset_tokens` backing the two token-based auth flows. Active task position is enforced unique per user via a partial unique index (`unique_active_position_per_user`, scoped to `status = active`). Task status is a five-value enum — `active`, `flying_later`, `custom`, `done`, `abandoned` — covering the three open lists plus completion and abandonment. Bird-image assignment cycles through all 22 illustrations in the assignment pool, avoiding any image already on another of the user's open tasks, before a repeat is allowed.
 
-## What's new in v1.11
+## Reliability and operational considerations
 
-- Fixed a reorder validation error (triggered when a long-open tab's task list drifts out of sync with the server) that showed a raw, internal-sounding message to users; it now shows a friendly "Awakening from a slumber, one moment…" instead, and the internal message never leaves the server.
-- Nine places across auth, task, and history flows were showing raw `error.message` text (network errors, unfiltered GraphQL errors, etc.) instead of going through the app's `friendlyErrorMessage()` helper; all now filter through it consistently.
-
-## What's new in v1.10
-
-- Added dark-mode bird icons: `frontend/public/img-dark/` mirrors `frontend/public/img/`, and `BirdImage` now switches between the two sets based on the light/dark theme toggle.
-- Added an Apple touch icon (`frontend/public/apple-touch-icon.png`) — the landing-page bird on a brand dark-blue background — so bookmarking the site on iOS shows the bird instead of a generic icon.
-- Double-clicking a task row in **Awaiting flight** or **Flying later** now opens an edit modal (`EditTaskModal`), in addition to the existing click-to-edit-inline behavior.
-- Fixed the Add Task modal closing on stray taps that started inside the modal but ended outside it; it now only closes via its explicit close/cancel action or Escape.
-
-## What's new in v1.7
-
-- Fixed a bug where a database connection getting killed server-side (idle timeout, restart) could send its raw Postgres error text ("terminating connection due to administrator command") straight to the browser instead of a normal error.
-- The GraphQL backend now masks any error that wasn't raised intentionally by app code, logging the real exception server-side and returning a generic message to the client. Intentional errors (e.g. "Task not found") are unaffected.
-- Removed Django's persistent DB connections (`CONN_MAX_AGE` 600s → 0), the root cause: a request could get handed a connection the server had already killed since it was last used.
-- Added a one-time automatic frontend retry for the narrow class of masked errors caused by a dropped connection, so the rare remaining case resolves itself instead of surfacing to the user.
-
-## What's new in v1.6
-
-- Fixed a database deadlock that could occur when completing two tasks in quick succession, which was causing one completion to fail with a raw, meaningless error and silently revert in the UI.
-- `completeTask` now acquires locks on all of a user's active (or flying-later) tasks in one consistently-ordered query instead of locking the target task and its siblings separately, removing the lock-order inversion that caused the deadlock.
-- Added a one-time automatic retry on the backend if a lock conflict still occurs.
-
-## What's new in v1.5
-
-- Added a new persisted task status, `flying_later`, shown as a dedicated section between **Awaiting flight** and **This bird has flown** on the flock page.
-- Tasks can now be dragged between **Awaiting flight** and **Flying later**, with manual ordering preserved inside each list.
-- Added a hide/show toggle for the **Flying later** section on flock, with the preference remembered locally.
-- `flyingLater` tasks are excluded from focus and non-flying-later counts until moved back to `awaiting flight`.
-
-## Summary since last commit
-
-- Added smooth cross-list drag behavior between **Awaiting flight** and **Flying later** (live move on drag-over, no duplicate rows on cross-list drags, and persisted final order/status on drop).
-- Completing a task from **Flying later** now works server-side and moves the task into **This bird has flown**.
-- **Flying later** now supports:
-  - `hide tasks` under the list when expanded
-  - `show tasks` when collapsed
-  - collapsed section remains a valid drop target; dropping into it opens the section
-  - no toggle shown when there are zero flying-later tasks
-- Added completed-list visibility controls with the same conditional behavior:
-  - `hide completed` / `show completed`
-  - toggle shown only when there are completed tasks in the section
-- Updated copy on empty awaiting state action:
-  - empty **Awaiting flight**: `add new task`
-  - non-empty **Awaiting flight**: `add another`
-- Updated landing-page messaging in **How it works**:
-  - added a dedicated Step 3 for shifting priorities with a `later list`
-  - moved **Finish and move on** to Step 4 and updated copy to mention an exportable history record
-- Updated landing-page mock UI and responsive behavior:
-  - added a mock **Flying later** card in the rail
-  - matched label styling (including `Today`) across mock sections
-  - kept mobile-style row behavior up to `1280px`, then restored desktop behavior above that
-  - adjusted section widths to `xl:w-1/2` while preserving existing behavior below `1280px`
-- Updated landing example copy:
-  - changed `Write the agenda so meeting has a point` to `write meeting agenda`
-
-Three core tables: `users`, `tasks`, `sessions`. Active task positions are unique per user via a partial unique index. Bird image assignment cycles through all 28 illustrations before repeating.
+- Task completion acquires locks on a user's active (or flying-later) tasks in a single, consistently-ordered query (`select_for_update().order_by("id")`) instead of locking the target task and its siblings separately, avoiding the lock-order inversion that previously caused deadlocks under rapid completions; a one-time backend retry handles a remaining lock conflict.
+- Unexpected backend exceptions — anything not raised intentionally as a `GraphQLError` by app code — are logged server-side via Python's `logging` module and returned to the client as a generic "Something went wrong. Please try again." message instead of raw database or internal error text. Errors raised on purpose (e.g. "Task not found") pass through unchanged.
+- Errors caused by a dropped database connection are tagged with a `TRANSIENT_ERROR` extension code server-side; the frontend's Apollo error link retries that specific case once automatically, so the rare remaining failure resolves itself instead of reaching the user.
+- Django's persistent database connections are disabled (`CONN_MAX_AGE = 0`) — the fix for a bug where a request could be handed a connection the server had already killed (idle timeout, restart), which had been surfacing as a raw Postgres error in the browser.
+- A stale reorder request — client task order drifted from the server's, usually from a long-idle tab — is rejected server-side with a dedicated `StaleOrderError` whose internal message never reaches the client; the frontend shows a friendly "Awakening from a slumber, one moment…" instead.
+- On the frontend, `friendlyErrorMessage()` only surfaces GraphQL error text the backend sent intentionally; network errors, timeouts, and other exceptions collapse into a generic fallback message instead of leaking raw error text into the UI.
+- Auth-sensitive mutations (sign-up, sign-in, password reset, resend verification) are rate-limited per IP address via Django's cache framework, returning a generic "Too many requests" message rather than allowing unlimited attempts.
 
 ## Deployment
 
@@ -202,9 +172,18 @@ Backend environment variables (secret keys, database URL, SMTP credentials) are 
 | `a` | Add task |
 | `Esc` | Close modal |
 
+## Current release
+
+**v1.15 — Paste multiple tasks, longer task text**
+
+- Pasting multi-line text into the task field on Focus or Flock now prompts to create one task per line instead of one task with the whole paste; declining keeps it as a single task with line breaks intact.
+- Tripled the per-task character limit (280 → 840) and switched the title field to an auto-growing textarea so multi-line titles display and edit properly.
+
+Full version history, including prior reliability fixes and UI changes by release: see [CHANGELOG.md](CHANGELOG.md).
+
 ## Out of scope
 
-No tags, projects, due dates, reminders, sharing, or streaks. Intentionally.
+No tags, projects, due dates, reminders, sharing, or streaks. Intentionally — the constraint (one active task, a deliberate backlog, a clean history) is the product.
 
 ## License
 

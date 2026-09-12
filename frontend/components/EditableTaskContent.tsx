@@ -158,7 +158,7 @@ export function EditableTaskContent({
     <button
       type="button"
       onClick={() => setEditingTitle(true)}
-      className={`w-full border-b border-transparent hover:border-stone/30 ${titleClass} ${align === "center" ? "text-center" : "text-left"}`}
+      className={`w-full whitespace-pre-wrap border-b border-transparent hover:border-stone/30 ${titleClass} ${align === "center" ? "text-center" : "text-left"}`}
     >
       {task.title}
     </button>

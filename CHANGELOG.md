@@ -4,6 +4,21 @@ A running log of what changed and why.
 
 ---
 
+## v1.15 Paste multiple tasks, longer task text — September 12, 2026
+
+### Paste-to-create on Focus and Flock
+
+- Pasting text with more than one line into the task field (Focus's Add Task modal, and the same shared `AddTaskModal` on Flock) now shows an inline prompt — "Create N separate tasks from this paste?" — instead of dropping all the lines into one task. Blank lines don't count toward N.
+- Choosing **Yes** creates one task per non-blank line, in the order pasted, appended to the end of **Awaiting flight**.
+- Choosing **No** inserts the pasted text as-is (line breaks included) into the single task being created.
+
+### Longer task text
+
+- The task title field (`components/AddTaskModal.tsx`, `components/EditTaskModal.tsx`) is now an auto-growing textarea instead of a single-line input, so a multi-line title (from declining the paste prompt above, or typing Shift+Enter) displays and edits properly; Enter still submits. Task titles now render with `whitespace-pre-wrap` wherever they're shown (`components/EditableTaskContent.tsx`), so those line breaks are visible in the flock list and focus view too.
+- Tripled the per-task character limit from 280 to 840, on both the add and edit paths (`backend/core/models.py`, `backend/core/schema.py`, frontend `maxLength`).
+
+---
+
 ## v1.14 Custom section — August 25, 2026
 
 ### One user-named section, above Flying later
@@ -139,13 +154,21 @@ A running log of what changed and why.
 ### What changed in the flock
 - Added a new task status, **Flying later**.
 - Added a dedicated **Flying later** section between **Awaiting flight** and **This bird has flown**.
-- Added drag/drop between **Awaiting flight** and **Flying later** and kept manual order in both lists.
-- Added a hide/show toggle for **Flying later** and save that preference in the browser.
+- Added drag/drop between **Awaiting flight** and **Flying later**, with smooth cross-list behavior (live move on drag-over, no duplicate rows mid-drag, persisted final order/status on drop) and kept manual order in both lists.
+- Added a hide/show toggle for **Flying later** and save that preference in the browser; the toggle is hidden entirely when the section has zero tasks, and a collapsed section remains a valid drop target (dropping into it opens the section).
+- Completing a task from **Flying later** now works server-side and moves the task into **This bird has flown**.
+- Added the same hide/show visibility control to the completed list (`hide completed` / `show completed`), shown only when the section has completed tasks.
+- Updated the empty-state action copy under **Awaiting flight**: `add new task` when empty, `add another` once it has tasks.
 
 ### Focus + counts
 
 - Tasks in **Flying later** do not show up in focus (or active counts) until moved back to **Awaiting flight**.
 - Added GraphQL support for this flow via `flyingLater`, `setTaskStatus`, and `reorderFlyingLaterTasks`.
+
+### Landing page
+
+- Added a mock **Flying later** card to the landing page's rail preview, with a dedicated Step 3 in **How it works** for shifting priorities into a later list, and a Step 4 update mentioning the exportable history record.
+- Matched label styling (including `Today`) across mock sections and adjusted responsive behavior/section widths for the wider layout.
 
 ---
 

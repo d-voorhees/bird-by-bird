@@ -38,7 +38,7 @@ class TaskStatus(models.TextChoices):
 class Task(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tasks")
-    title = models.CharField(max_length=280)
+    title = models.CharField(max_length=840)
     notes = models.TextField(null=True, blank=True)
     status = models.CharField(
         max_length=20,

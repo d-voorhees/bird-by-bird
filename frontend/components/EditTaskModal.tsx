@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@apollo/client/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { notify } from "@/components/ToastHost";
 import { taskEditRefetchQueries } from "@/components/EditableTaskContent";
@@ -10,12 +10,15 @@ import { COMPLETE_TASK_MUTATION, UPDATE_TASK_MUTATION } from "@/lib/graphql/oper
 import { markTaskDoneInCache } from "@/lib/taskCache";
 import type { Task } from "@/lib/types";
 
+const TITLE_MAX_LENGTH = 840;
+
 type EditTaskModalProps = {
   task: Task | null;
   onClose: () => void;
 };
 
 export function EditTaskModal({ task, onClose }: EditTaskModalProps) {
+  const titleRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [showNotes, setShowNotes] = useState(false);
@@ -39,6 +42,13 @@ export function EditTaskModal({ task, onClose }: EditTaskModalProps) {
       setShowNotes(Boolean(task.notes?.trim()));
     }
   }, [task]);
+
+  useEffect(() => {
+    const textarea = titleRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [title]);
 
   const handleClose = useCallback(() => {
     onClose();
@@ -121,15 +131,22 @@ export function EditTaskModal({ task, onClose }: EditTaskModalProps) {
           Edit task
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
+          <textarea
+            ref={titleRef}
             value={title}
             onChange={(event) => setTitle(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                event.currentTarget.form?.requestSubmit();
+              }
+            }}
             placeholder="What needs doing?"
-            maxLength={280}
+            maxLength={TITLE_MAX_LENGTH}
+            rows={1}
             enterKeyHint="done"
             autoFocus
-            className="w-full border-b border-stone/30 bg-transparent py-2 text-lg text-ink outline-none placeholder:text-ink/35 focus:border-accent"
+            className="w-full resize-none overflow-hidden border-b border-stone/30 bg-transparent py-2 text-lg text-ink outline-none placeholder:text-ink/35 focus:border-accent"
             aria-label="Task title"
           />
 

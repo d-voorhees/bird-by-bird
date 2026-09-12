@@ -204,8 +204,8 @@ class AddTask(graphene.Mutation):
         trimmed = title.strip()
         if not trimmed:
             raise GraphQLError("Title is required")
-        if len(trimmed) > 280:
-            raise GraphQLError("Title must be 280 characters or fewer")
+        if len(trimmed) > 840:
+            raise GraphQLError("Title must be 840 characters or fewer")
 
         return task_service.add_task(user, trimmed, notes, do_next=do_next)
 
