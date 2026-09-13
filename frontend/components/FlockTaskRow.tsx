@@ -29,17 +29,11 @@ export function TaskListDropZone({ id, children }: { id: string; children: React
     <div ref={setNodeRef} className="relative -m-3 p-3">
       <div
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-0 rounded-2xl bg-accent/20 blur-lg transition-opacity duration-200 ${
+        className={`pointer-events-none absolute inset-0 rounded-2xl bg-accent/25 blur-lg transition-opacity duration-200 ${
           isOver ? "opacity-100" : "opacity-0"
         }`}
       />
-      <div
-        className={`relative rounded-lg transition-shadow duration-200 ${
-          isOver ? "shadow-md shadow-accent/20" : ""
-        }`}
-      >
-        {children}
-      </div>
+      <div className="relative rounded-lg">{children}</div>
     </div>
   );
 }
